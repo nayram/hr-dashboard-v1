@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
-import { VettingNotes } from "@/components/vetting-notes"
 import type { HRPreferencesData } from "@/components/hr-preferences"
 
 // This would normally come from a database
@@ -77,60 +76,6 @@ const getProfileData = (slug: string) => {
       timezone: "Pacific Time (US & Canada)",
       preferences: ["Virtual meetings", "Phone calls"],
     },
-    vettingNotes: [
-      {
-        id: "1",
-        type: "assessment",
-        content:
-          "Sarah demonstrates exceptional knowledge of HR best practices and compliance requirements. Her strategic approach to talent acquisition has been validated through our technical assessment. She shows strong leadership capabilities and excellent communication skills.",
-        author: {
-          name: "Alex Thompson",
-          title: "Lead HR Assessor",
-          company: "HR Vetting Team",
-        },
-        rating: 5,
-        date: "March 15, 2023",
-        tags: ["Leadership", "Compliance", "Strategic Thinking"],
-      },
-      {
-        id: "2",
-        type: "assessment",
-        content:
-          "While Sarah excels in most HR competencies, there's room for growth in the HRIS implementation area. Her technical skills are solid but could benefit from more hands-on experience with enterprise-level systems.",
-        author: {
-          name: "Jordan Lee",
-          title: "Technical HR Specialist",
-          company: "HR Vetting Team",
-        },
-        rating: 4,
-        date: "March 18, 2023",
-        tags: ["HRIS", "Technical Skills", "Development Area"],
-      },
-      {
-        id: "3",
-        type: "recommendation",
-        content:
-          "Sarah transformed our entire recruitment process during her time at Global Solutions. Her strategic vision and implementation skills led to a 40% reduction in time-to-hire while improving candidate quality. She's an exceptional HR leader who balances business needs with employee advocacy.",
-        author: {
-          name: "Michael Chen",
-          title: "Former CEO",
-          company: "Global Solutions Ltd.",
-        },
-        date: "January 10, 2023",
-      },
-      {
-        id: "4",
-        type: "recommendation",
-        content:
-          "I had the pleasure of working with Sarah on several cross-functional projects. Her deep understanding of organizational development and change management was instrumental in our successful department restructuring. She's a thoughtful HR partner who truly understands business strategy.",
-        author: {
-          name: "Priya Sharma",
-          title: "VP of Operations",
-          company: "Tech Innovations Inc.",
-        },
-        date: "February 5, 2023",
-      },
-    ],
     preferences: {
       industryFocus: ["Technology", "Healthcare", "Finance"],
       companySize: ["Medium Businesses (50-500 employees)", "Series C-D Startups (50-500 employees)"],
@@ -433,8 +378,6 @@ export default function PublicProfilePage({ params }: { params: { slug: string }
                   </div>
                 </CardContent>
               </Card>
-
-              <VettingNotes notes={profile.vettingNotes} showRequestButton={false} />
 
               <div className="flex justify-center mt-4">
                 <Button variant="outline" asChild>

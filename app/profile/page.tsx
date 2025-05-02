@@ -16,9 +16,6 @@ import { AlertCircle, Copy, ExternalLink, Linkedin, Mail, MapPin, Phone, Twitter
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-import { VettingNotes } from "@/components/vetting-notes"
-import { RequestRecommendationDialog } from "@/components/request-recommendation-dialog"
-import { PendingRecommendations } from "@/components/pending-recommendations"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
 
 export default function ProfilePage() {
@@ -166,36 +163,6 @@ export default function ProfilePage() {
     } as HRPreferencesData,
   })
 
-  const [pendingRecommendations, setPendingRecommendations] = useState([
-    {
-      id: "1",
-      name: "David Wilson",
-      email: "david.wilson@example.com",
-      company: "Tech Innovations Inc.",
-      relationship: "Manager",
-      requestDate: "April 10, 2023",
-      status: "completed" as const,
-    },
-    {
-      id: "2",
-      name: "Jennifer Lee",
-      email: "jennifer.lee@example.com",
-      company: "Global Solutions Ltd.",
-      relationship: "Colleague",
-      requestDate: "April 15, 2023",
-      status: "pending" as const,
-    },
-    {
-      id: "3",
-      name: "Robert Chen",
-      email: "robert.chen@example.com",
-      company: "HR Consultants Group",
-      relationship: "Client",
-      requestDate: "April 18, 2023",
-      status: "viewed" as const,
-    },
-  ])
-
   const handleCopyProfileLink = () => {
     const profileLink = `${window.location.origin}/profile/${profile.name.toLowerCase().replace(/\s+/g, "-")}`
     navigator.clipboard.writeText(profileLink)
@@ -218,15 +185,6 @@ export default function ProfilePage() {
       title: "Profile updated",
       description: "Your profile has been successfully updated",
     })
-  }
-
-  const handleRemoveRecommendation = (id: string) => {
-    setPendingRecommendations((prev) => prev.filter((rec) => rec.id !== id))
-  }
-
-  const handleResendRecommendation = (id: string) => {
-    // In a real app, this would trigger an API call to resend the email
-    console.log(`Resending recommendation request with ID: ${id}`)
   }
 
   const handleUpdatePreferences = (preferences: HRPreferencesData) => {
@@ -267,8 +225,6 @@ export default function ProfilePage() {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="preferences">HR Preferences</TabsTrigger>
           <TabsTrigger value="availability">Availability</TabsTrigger>
-          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-          <TabsTrigger value="vetting-notes">Vetting Notes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
@@ -731,72 +687,6 @@ export default function ProfilePage() {
             <CardFooter>
               <Button className="ml-auto">Save Availability</Button>
             </CardFooter>
-          </Card>
-        </TabsContent>
-        <TabsContent value="recommendations">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Recommendation Requests</CardTitle>
-                  <CardDescription>
-                    Request and manage professional recommendations from colleagues and managers
-                  </CardDescription>
-                </div>
-                <RequestRecommendationDialog />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium mb-4">Pending Requests</h3>
-                <PendingRecommendations
-                  recommendations={pendingRecommendations}
-                  onRemove={handleRemoveRecommendation}
-                  onResend={handleResendRecommendation}
-                />
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-4">About Recommendations</h3>
-                <div className="bg-gray-50 rounded-lg p-4 text-sm">
-                  <p className="mb-2">
-                    Recommendations from colleagues and managers are an important part of your professional profile.
-                    They provide potential employers with insights into your work ethic, skills, and accomplishments
-                    from people who have worked directly with you.
-                  </p>
-                  <p>
-                    Once approved, recommendations will appear in your public profile under the "Vetting Notes" section.
-                    Our vetting team will review all recommendations to ensure they meet our quality standards.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="vetting-notes">
-          <Card>
-            <CardHeader>
-              <CardTitle>Vetting Team Notes</CardTitle>
-              <CardDescription>
-                These notes are visible to potential employers and represent our team's honest assessment and collected
-                recommendations.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Alert variant="warning" className="bg-amber-50 text-amber-800 border-amber-200">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Important Information</AlertTitle>
-                  <AlertDescription>
-                    These notes cannot be edited directly. They are created by our vetting team after thorough
-                    assessment and verification of references. If you believe any information is incorrect, please
-                    contact our support team.
-                  </AlertDescription>
-                </Alert>
-
-                <VettingNotes notes={profile.vettingNotes} showRequestButton={true} />
-              </div>
-            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
