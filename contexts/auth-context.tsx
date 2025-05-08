@@ -69,15 +69,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(authToken)
     localStorage.setItem("auth_token", authToken)
     await fetchUserDetails(authToken)
-    router.push("/profile")
+
+    // Check if there's a redirect path stored
+    const redirectPath = sessionStorage.getItem("redirectAfterLogin")
+    if (redirectPath) {
+      sessionStorage.removeItem("redirectAfterLogin")
+      router.push(redirectPath)
+    } else {
+      router.push("/profile")
+    }
   }
 
-  // Logout function
+  // Enhanced logout function
   const logout = () => {
+    // Clear user data
     setUser(null)
     setToken(null)
+
+    // Clear localStorage
     localStorage.removeItem("auth_token")
+
+    // Reset loading state
     setIsLoading(false)
+
+    // Show toast notification
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    })
+
+    // Redirect to login page
     router.push("/login")
   }
 

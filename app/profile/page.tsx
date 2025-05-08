@@ -12,13 +12,15 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { AlertCircle, Copy, ExternalLink, Linkedin, LogOut, Mail, MapPin, Phone, Twitter } from "lucide-react"
+import { AlertCircle, Copy, ExternalLink, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
+// Import the LogoutButton component at the top of the file
+import { LogoutButton } from "@/components/logout-button"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -149,10 +151,7 @@ export default function ProfilePage() {
               View Public Profile
             </Button>
           </Link>
-          <Button variant="outline" onClick={logout}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          <LogoutButton />
         </div>
       </div>
 
