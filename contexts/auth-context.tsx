@@ -1,7 +1,8 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+
+import { createContext, useContext, useEffect, useState, useRef } from "react"
 import { getUserDetails } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -35,6 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const { toast } = useToast()
 
+  // Use a ref to track if login is in progress
+  const loginInProgressRef = useRef(false)
+
   // Check for token in localStorage on initial load
   useEffect(() => {
     const storedToken = localStorage.getItem("auth_token")
@@ -64,19 +68,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Login function
+  // Login function with protection against multiple calls
   const login = async (authToken: string) => {
-    setToken(authToken)
-    localStorage.setItem("auth_token", authToken)
-    await fetchUserDetails(authToken)
+    // If login is already in progress, return early
+    if (loginInProgressRef.current) {
+      console.log("Login already in progress, ignoring duplicate call")
+      return
+    }
 
-    // Check if there's a redirect path stored
-    const redirectPath = sessionStorage.getItem("redirectAfterLogin")
-    if (redirectPath) {
-      sessionStorage.removeItem("redirectAfterLogin")
-      router.push(redirectPath)
-    } else {
-      router.push("/profile")
+    try {
+      // Set flag to prevent multiple simultaneous logins
+      loginInProgressRef.current = true
+
+      setToken(authToken)
+      localStorage.setItem("auth_token", authToken)
+      await fetchUserDetails(authToken)
+
+      // Check if there's a redirect path stored
+      const redirectPath = sessionStorage.getItem("redirectAfterLogin")
+      if (redirectPath) {
+        sessionStorage.removeItem("redirectAfterLogin")
+        router.push(redirectPath)
+      } else {
+        router.push("/profile")
+      }
+    } finally {
+      // Reset flag after login completes (success or failure)
+      loginInProgressRef.current = false
     }
   }
 

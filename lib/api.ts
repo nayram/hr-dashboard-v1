@@ -8,6 +8,9 @@ export const API_ENDPOINTS = {
   USER: `${API_BASE_URL}/users/me`,
 }
 
+// Track if verification is in progress
+let verificationInProgress = false
+
 // Login with email
 export async function loginWithEmail(email: string): Promise<{ message: string }> {
   const response = await fetch(API_ENDPOINTS.LOGIN, {
@@ -26,9 +29,18 @@ export async function loginWithEmail(email: string): Promise<{ message: string }
   return response.json()
 }
 
-// Verify token
+// Verify token with protection against multiple calls
 export async function verifyToken(token: string): Promise<{ token: string; message: string }> {
+  // If verification is already in progress, throw an error
+  if (verificationInProgress) {
+    throw new Error("Verification already in progress")
+  }
+
   try {
+    // Set flag to prevent multiple simultaneous verifications
+    verificationInProgress = true
+
+    console.log("Sending verification request...")
     const response = await fetch(`${API_ENDPOINTS.VERIFY}?token=${encodeURIComponent(token)}`, {
       method: "GET",
       headers: {
@@ -50,6 +62,9 @@ export async function verifyToken(token: string): Promise<{ token: string; messa
     } else {
       throw new Error("Failed to verify token. Please try again or request a new verification link.")
     }
+  } finally {
+    // Reset flag after verification completes (success or failure)
+    verificationInProgress = false
   }
 }
 

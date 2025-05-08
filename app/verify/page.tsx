@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,10 +9,8 @@ import { useAuth } from "@/contexts/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { CheckCircle, XCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
-// Import the VerificationPlaceholder component
 import { VerificationPlaceholder } from "@/components/verification-placeholder"
 
-// Update the component to handle the case when no token is provided
 export default function VerifyPage() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
@@ -21,21 +19,18 @@ export default function VerifyPage() {
   const { login } = useAuth()
   const { toast } = useToast()
 
-  const [shouldVerify, setShouldVerify] = useState(false)
+  // Use a ref to track if verification has been attempted
+  const verificationAttemptedRef = useRef(false)
 
   useEffect(() => {
-    if (token) {
-      setShouldVerify(true)
-    } else {
-      setShouldVerify(false)
-    }
-  }, [token])
-
-  useEffect(() => {
-    const verifyUserToken = async () => {
-      if (shouldVerify) {
+    // Only verify if we have a token and haven't attempted verification yet
+    if (token && !verificationAttemptedRef.current) {
+      const verifyUserToken = async () => {
         try {
-          setVerificationStatus("loading")
+          // Mark that we've attempted verification
+          verificationAttemptedRef.current = true
+
+          console.log("Verifying token...")
           const response = await verifyToken(token)
           await login(response.token)
           setVerificationStatus("success")
@@ -54,10 +49,17 @@ export default function VerifyPage() {
           })
         }
       }
+
+      verifyUserToken()
+    } else if (!token) {
+      // If no token, set status to error
+      setVerificationStatus("error")
+      setErrorMessage("No verification token found in the URL.")
     }
 
-    verifyUserToken()
-  }, [token, login, toast, shouldVerify])
+    // No dependencies needed as we're using a ref to prevent multiple executions
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // If no token is provided, show the placeholder component
   if (!token) {
