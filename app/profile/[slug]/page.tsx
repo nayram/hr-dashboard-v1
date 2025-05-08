@@ -20,6 +20,7 @@ const getProfileData = (slug: string) => {
       "HR professional with 10+ years of experience in talent acquisition, employee relations, and organizational development. Passionate about creating inclusive workplaces and implementing effective HR strategies.",
     linkedin: "linkedin.com/in/sarahjohnson",
     twitter: "twitter.com/sarahjhr",
+    profileImage: null as string | null,
     skills: [
       "Talent Acquisition",
       "Employee Relations",
@@ -122,8 +123,8 @@ export default function PublicProfilePage({ params }: { params: { slug: string }
         <CardHeader className="pb-0">
           <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
             <Avatar className="h-24 w-24">
-              <AvatarImage src="/placeholder.svg?height=96&width=96" alt={profile.name} />
-              <AvatarFallback>
+              <AvatarImage src={profile.profileImage || ""} alt={profile.name} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xl">
                 {profile.name
                   .split(" ")
                   .map((n) => n[0])
@@ -157,20 +158,6 @@ export default function PublicProfilePage({ params }: { params: { slug: string }
                   <CardTitle className="text-base">HR Specialization</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/*<div>*/}
-                  {/*  <h4 className="text-sm font-medium mb-1">Preferred Roles</h4>*/}
-                  {/*  <div className="flex flex-wrap gap-2">*/}
-                  {/*    {profile.preferences.roles.map((roleId) => {*/}
-                  {/*      const role = roleCategories.find((r) => r.id === roleId)*/}
-                  {/*      return role ? (*/}
-                  {/*        <Badge key={roleId} variant="secondary">*/}
-                  {/*          {role.label}*/}
-                  {/*        </Badge>*/}
-                  {/*      ) : null*/}
-                  {/*    })}*/}
-                  {/*  </div>*/}
-                  {/*</div>*/}
-
                   <div>
                     <h4 className="text-sm font-medium mb-1">Industry Focus</h4>
                     <div className="flex flex-wrap gap-2">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,14 +12,17 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { AlertCircle, Copy, ExternalLink, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
+import { AlertCircle, Copy, ExternalLink, Linkedin, LogOut, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
+import { ProfileImageUpload } from "@/components/profile-image-upload"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function ProfilePage() {
   const { toast } = useToast()
+  const { user, logout } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [availability, setAvailability] = useState<{ [key: string]: boolean }>({
@@ -33,135 +36,65 @@ export default function ProfilePage() {
   })
 
   const [profile, setProfile] = useState({
-    name: "Sarah Johnson",
-    title: "Senior HR Manager",
-    email: "sarah.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    about:
-      "HR professional with 10+ years of experience in talent acquisition, employee relations, and organizational development. Passionate about creating inclusive workplaces and implementing effective HR strategies.",
-    linkedin: "linkedin.com/in/sarahjohnson",
-    twitter: "twitter.com/sarahjhr",
-    skills: [
-      "Talent Acquisition",
-      "Employee Relations",
-      "Performance Management",
-      "Compensation & Benefits",
-      "HRIS",
-      "Conflict Resolution",
-      "Diversity & Inclusion",
-      "Training & Development",
-    ],
+    name: "",
+    title: "HR Professional",
+    email: "",
+    phone: "",
+    location: "",
+    about: "",
+    linkedin: "",
+    twitter: "",
+    profileImage: null as string | null,
+    skills: [] as string[],
     experience: [
       {
-        title: "Senior HR Manager",
-        company: "Tech Innovations Inc.",
-        period: "2018 - Present",
-        description:
-          "Lead a team of 5 HR professionals supporting 500+ employees. Implemented new HRIS system reducing administrative tasks by 30%.",
-      },
-      {
-        title: "HR Business Partner",
-        company: "Global Solutions Ltd.",
-        period: "2014 - 2018",
-        description:
-          "Provided strategic HR support to executive leadership. Reduced turnover by 15% through improved engagement initiatives.",
-      },
-      {
-        title: "Recruitment Specialist",
-        company: "Talent Finders Agency",
-        period: "2011 - 2014",
-        description:
-          "Managed full-cycle recruitment for technology clients. Filled 100+ positions annually with 95% retention rate.",
+        title: "",
+        company: "",
+        period: "",
+        description: "",
       },
     ],
     education: [
       {
-        degree: "Master's in Human Resources Management",
-        institution: "University of California",
-        year: "2011",
-      },
-      {
-        degree: "Bachelor's in Business Administration",
-        institution: "State University",
-        year: "2009",
+        degree: "",
+        institution: "",
+        year: "",
       },
     ],
-    certifications: [
-      "SHRM Senior Certified Professional (SHRM-SCP)",
-      "Professional in Human Resources (PHR)",
-      "Certified Diversity Professional (CDP)",
-    ],
-    vettingNotes: [
-      {
-        id: "1",
-        type: "assessment",
-        content:
-          "Sarah demonstrates exceptional knowledge of HR best practices and compliance requirements. Her strategic approach to talent acquisition has been validated through our technical assessment. She shows strong leadership capabilities and excellent communication skills.",
-        author: {
-          name: "Alex Thompson",
-          title: "Lead HR Assessor",
-          company: "HR Vetting Team",
-        },
-        rating: 5,
-        date: "March 15, 2023",
-        tags: ["Leadership", "Compliance", "Strategic Thinking"],
-      },
-      {
-        id: "2",
-        type: "assessment",
-        content:
-          "While Sarah excels in most HR competencies, there's room for growth in the HRIS implementation area. Her technical skills are solid but could benefit from more hands-on experience with enterprise-level systems.",
-        author: {
-          name: "Jordan Lee",
-          title: "Technical HR Specialist",
-          company: "HR Vetting Team",
-        },
-        rating: 4,
-        date: "March 18, 2023",
-        tags: ["HRIS", "Technical Skills", "Development Area"],
-      },
-      {
-        id: "3",
-        type: "recommendation",
-        content:
-          "Sarah transformed our entire recruitment process during her time at Global Solutions. Her strategic vision and implementation skills led to a 40% reduction in time-to-hire while improving candidate quality. She's an exceptional HR leader who balances business needs with employee advocacy.",
-        author: {
-          name: "Michael Chen",
-          title: "Former CEO",
-          company: "Global Solutions Ltd.",
-        },
-        date: "January 10, 2023",
-      },
-      {
-        id: "4",
-        type: "recommendation",
-        content:
-          "I had the pleasure of working with Sarah on several cross-functional projects. Her deep understanding of organizational development and change management was instrumental in our successful department restructuring. She's a thoughtful HR partner who truly understands business strategy.",
-        author: {
-          name: "Priya Sharma",
-          title: "VP of Operations",
-          company: "Tech Innovations Inc.",
-        },
-        date: "February 5, 2023",
-      },
-    ],
+    certifications: [] as string[],
     preferences: {
-      // Removed roles, compensationExpertise, and hrTechProficiency
-      industryFocus: ["Technology", "Healthcare", "Finance"],
-      companySize: ["Medium Businesses (50-500 employees)", "Series C-D Startups (50-500 employees)"],
-      recruitmentFocus: ["Tech & IT roles", "Engineering", "Product"],
-      specializations: [
-        "Recruit and Onboard Talents",
-        "Handle People Ops and HR admin",
-        "Design compensation & benefits program",
-      ],
-      workStyle: "strategic",
-      languages: ["English", "Spanish", "French"],
-      additionalNotes:
-        "Particularly interested in companies with a strong focus on employee development and innovative HR practices. Experienced in implementing data-driven HR strategies and building scalable talent acquisition processes.",
+      industryFocus: [] as string[],
+      companySize: [] as string[],
+      recruitmentFocus: [] as string[],
+      specializations: [] as string[],
+      workStyle: "",
+      languages: [] as string[],
+      additionalNotes: "",
     } as HRPreferencesData,
   })
+
+  // Update profile with user data when available
+  useEffect(() => {
+    if (user) {
+      setProfile((prev) => ({
+        ...prev,
+        name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
+        email: user.email || prev.email,
+        phone: user.phoneNumber || prev.phone,
+        location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
+        about: user.bio || prev.about,
+        skills: prev.skills,
+        preferences: {
+          ...prev.preferences,
+          industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
+          companySize: user.preferences?.companySize || prev.preferences.companySize,
+          recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
+          specializations: user.preferences?.specialization || prev.preferences.specializations,
+          languages: user.languages || prev.preferences.languages,
+        },
+      }))
+    }
+  }, [user])
 
   const handleCopyProfileLink = () => {
     const profileLink = `${window.location.origin}/profile/${profile.name.toLowerCase().replace(/\s+/g, "-")}`
@@ -194,6 +127,13 @@ export default function ProfilePage() {
     }))
   }
 
+  const handleProfileImageChange = (imageUrl: string | null) => {
+    setProfile((prev) => ({
+      ...prev,
+      profileImage: imageUrl,
+    }))
+  }
+
   return (
     <div className="container mx-auto py-6 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -209,6 +149,10 @@ export default function ProfilePage() {
               View Public Profile
             </Button>
           </Link>
+          <Button variant="outline" onClick={logout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
         </div>
       </div>
 
@@ -241,15 +185,24 @@ export default function ProfilePage() {
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col items-center text-center">
-                <Avatar className="h-24 w-24 mb-4">
-                  <AvatarImage src="/placeholder.svg?height=96&width=96" alt={profile.name} />
-                  <AvatarFallback>
-                    {profile.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
+                {isEditing ? (
+                  <ProfileImageUpload
+                    initialImage={profile.profileImage}
+                    name={profile.name}
+                    onImageChange={handleProfileImageChange}
+                    className="mb-4"
+                  />
+                ) : (
+                  <Avatar className="h-24 w-24 mb-4">
+                    <AvatarImage src={profile.profileImage || ""} alt={profile.name} />
+                    <AvatarFallback>
+                      {profile.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                )}
 
                 {isEditing ? (
                   <div className="space-y-4 w-full">
@@ -330,28 +283,32 @@ export default function ProfilePage() {
                         <MapPin className="h-4 w-4 text-gray-500" />
                         <span>{profile.location}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Linkedin className="h-4 w-4 text-gray-500" />
-                        <a
-                          href={`https://${profile.linkedin}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {profile.linkedin}
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Twitter className="h-4 w-4 text-gray-500" />
-                        <a
-                          href={`https://${profile.twitter}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {profile.twitter}
-                        </a>
-                      </div>
+                      {profile.linkedin && (
+                        <div className="flex items-center gap-2">
+                          <Linkedin className="h-4 w-4 text-gray-500" />
+                          <a
+                            href={`https://${profile.linkedin}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {profile.linkedin}
+                          </a>
+                        </div>
+                      )}
+                      {profile.twitter && (
+                        <div className="flex items-center gap-2">
+                          <Twitter className="h-4 w-4 text-gray-500" />
+                          <a
+                            href={`https://${profile.twitter}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {profile.twitter}
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -369,9 +326,10 @@ export default function ProfilePage() {
                       value={profile.about}
                       onChange={(e) => setProfile({ ...profile, about: e.target.value })}
                       className="min-h-[120px]"
+                      placeholder="Write a brief description about yourself, your experience, and your HR expertise..."
                     />
                   ) : (
-                    <p>{profile.about}</p>
+                    <p>{profile.about || "No bio information provided yet."}</p>
                   )}
                 </CardContent>
               </Card>
@@ -390,15 +348,20 @@ export default function ProfilePage() {
                         onChange={(e) =>
                           setProfile({ ...profile, skills: e.target.value.split(",").map((skill) => skill.trim()) })
                         }
+                        placeholder="Talent Acquisition, Employee Relations, Performance Management, etc."
                       />
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {profile.skills.map((skill, index) => (
-                        <Badge key={index} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
+                      {profile.skills.length > 0 ? (
+                        profile.skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary">
+                            {skill}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-gray-500">No skills added yet.</p>
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -470,17 +433,33 @@ export default function ProfilePage() {
                           <>
                             <div className="flex justify-between">
                               <div>
-                                <h3 className="font-semibold">{exp.title}</h3>
-                                <p className="text-gray-500">{exp.company}</p>
+                                <h3 className="font-semibold">{exp.title || "No title provided"}</h3>
+                                <p className="text-gray-500">{exp.company || "No company provided"}</p>
                               </div>
-                              <span className="text-sm text-gray-500">{exp.period}</span>
+                              <span className="text-sm text-gray-500">{exp.period || "No period provided"}</span>
                             </div>
-                            <p>{exp.description}</p>
+                            <p>{exp.description || "No description provided"}</p>
                             {index < profile.experience.length - 1 && <Separator className="my-4" />}
                           </>
                         )}
                       </div>
                     ))}
+                    {isEditing && (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setProfile({
+                            ...profile,
+                            experience: [
+                              ...profile.experience,
+                              { title: "", company: "", period: "", description: "" },
+                            ],
+                          })
+                        }
+                      >
+                        Add Experience
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -539,16 +518,29 @@ export default function ProfilePage() {
                           <>
                             <div className="flex justify-between">
                               <div>
-                                <h3 className="font-semibold">{edu.degree}</h3>
-                                <p className="text-gray-500">{edu.institution}</p>
+                                <h3 className="font-semibold">{edu.degree || "No degree provided"}</h3>
+                                <p className="text-gray-500">{edu.institution || "No institution provided"}</p>
                               </div>
-                              <span className="text-sm text-gray-500">{edu.year}</span>
+                              <span className="text-sm text-gray-500">{edu.year || "No year provided"}</span>
                             </div>
                             {index < profile.education.length - 1 && <Separator className="my-4" />}
                           </>
                         )}
                       </div>
                     ))}
+                    {isEditing && (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setProfile({
+                            ...profile,
+                            education: [...profile.education, { degree: "", institution: "", year: "" }],
+                          })
+                        }
+                      >
+                        Add Education
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -573,14 +565,23 @@ export default function ProfilePage() {
                               .filter((cert) => cert),
                           })
                         }
+                        placeholder="SHRM-CP
+PHR
+SPHR"
                       />
                     </div>
                   ) : (
-                    <ul className="list-disc pl-5 space-y-1">
-                      {profile.certifications.map((cert, index) => (
-                        <li key={index}>{cert}</li>
-                      ))}
-                    </ul>
+                    <>
+                      {profile.certifications.length > 0 ? (
+                        <ul className="list-disc pl-5 space-y-1">
+                          {profile.certifications.map((cert, index) => (
+                            <li key={index}>{cert}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500">No certifications added yet.</p>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
