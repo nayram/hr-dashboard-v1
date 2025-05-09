@@ -7,6 +7,15 @@ import { Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
 import type { HRPreferencesData } from "@/components/hr-preferences"
 
+// Map API specialization values to user-friendly display labels
+const specializationLabels: Record<string, string> = {
+  Recruiting: "Recruiting",
+  "De&I": "Diversity, Equity & Inclusion (DE&I)",
+  "HR Ops": "HR Operations & Administration",
+  "HR Performance": "Performance Management & Team Development",
+  "Compensation & Benefit": "Compensation & Benefits Programs",
+}
+
 // This would normally come from a database
 const getProfileData = (slug: string) => {
   // In a real app, you would fetch this data based on the slug
@@ -81,13 +90,9 @@ const getProfileData = (slug: string) => {
       industryFocus: ["Technology", "Healthcare", "Finance"],
       companySize: ["Medium Businesses (50-500 employees)", "Series C-D Startups (50-500 employees)"],
       recruitmentFocus: ["Tech & IT roles", "Engineering", "Product"],
-      specializations: [
-        "Recruit and Onboard Talents",
-        "Handle People Ops and HR admin",
-        "Design compensation & benefits program",
-      ],
+      specializations: ["Recruiting", "HR Ops", "Compensation & Benefit"],
       workStyle: "strategic",
-      languages: ["English", "Spanish", "French"],
+      languages: ["English 🇬🇧", "Spanish 🇪🇸", "French 🇫🇷"],
       additionalNotes:
         "Particularly interested in companies with a strong focus on employee development and innovative HR practices. Experienced in implementing data-driven HR strategies and building scalable talent acquisition processes.",
     } as HRPreferencesData,
@@ -115,6 +120,11 @@ export default function PublicProfilePage({ params }: { params: { slug: string }
       default:
         return style
     }
+  }
+
+  // Helper function to get user-friendly specialization label
+  const getSpecializationLabel = (specialization: string) => {
+    return specializationLabels[specialization] || specialization
   }
 
   return (
@@ -348,7 +358,7 @@ export default function PublicProfilePage({ params }: { params: { slug: string }
                     <div className="flex flex-wrap gap-2">
                       {profile.preferences.specializations.map((spec) => (
                         <Badge key={spec} variant="secondary">
-                          {spec}
+                          {getSpecializationLabel(spec)}
                         </Badge>
                       ))}
                     </div>

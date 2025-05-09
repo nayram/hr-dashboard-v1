@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 
-// Update the HRPreferencesData interface to remove the fields we don't need
+// Update the HRPreferencesData interface to match the API structure
 export interface HRPreferencesData {
   industryFocus: string[]
   companySize: string[]
@@ -28,16 +28,34 @@ interface HRPreferencesProps {
   readOnly?: boolean
 }
 
+// Map API specialization values to user-friendly display labels
+const specializationLabels: Record<string, string> = {
+  Recruiting: "Recruiting",
+  "De&I": "Diversity, Equity & Inclusion (DE&I)",
+  "HR Ops": "HR Operations & Administration",
+  "HR Performance": "Performance Management & Team Development",
+  "Compensation & Benefit": "Compensation & Benefits Programs",
+}
+
+// The reverse mapping for display purposes
+const specializationValues = Object.entries(specializationLabels).reduce(
+  (acc, [value, label]) => {
+    acc[label] = value
+    return acc
+  },
+  {} as Record<string, string>,
+)
+
 export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPreferencesProps) {
   const { toast } = useToast()
   const [currentPreferences, setCurrentPreferences] = useState<HRPreferencesData>(preferences)
   const [showRecruitmentFocus, setShowRecruitmentFocus] = useState(
-    currentPreferences.specializations.includes("Recruit and Onboard Talents"),
+    currentPreferences.specializations.includes("Recruiting"),
   )
 
   // Update showRecruitmentFocus when specializations change
   useEffect(() => {
-    setShowRecruitmentFocus(currentPreferences.specializations.includes("Recruit and Onboard Talents"))
+    setShowRecruitmentFocus(currentPreferences.specializations.includes("Recruiting"))
   }, [currentPreferences.specializations])
 
   // Update the handleInputChange function to properly handle arrays
@@ -122,36 +140,30 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
           <div className="space-y-3">
             <h3 className="text-lg font-medium">HR Specializations</h3>
             <div className="bg-white p-4 rounded-lg space-y-2 border border-gray-100">
-              {[
-                "Recruit and Onboard Talents",
-                "Develop DE&I programs",
-                "Handle People Ops and HR admin",
-                "Help teams perform better",
-                "Design compensation & benefits program",
-              ].map((specialization) => (
-                <div key={specialization} className="flex items-center space-x-2">
+              {Object.entries(specializationLabels).map(([value, label]) => (
+                <div key={value} className="flex items-center space-x-2">
                   <Checkbox
-                    id={`spec-${specialization.replace(/\s+/g, "-").toLowerCase()}`}
-                    checked={currentPreferences.specializations.includes(specialization)}
+                    id={`spec-${value.replace(/\s+/g, "-").toLowerCase()}`}
+                    checked={currentPreferences.specializations.includes(value)}
                     onCheckedChange={(checked) => {
-                      handleSpecializationChange(specialization, !!checked)
+                      handleSpecializationChange(value, !!checked)
                     }}
                     disabled={readOnly}
                   />
                   <Label
-                    htmlFor={`spec-${specialization.replace(/\s+/g, "-").toLowerCase()}`}
+                    htmlFor={`spec-${value.replace(/\s+/g, "-").toLowerCase()}`}
                     className={`${
-                      readOnly && !currentPreferences.specializations.includes(specialization) ? "text-gray-400" : ""
+                      readOnly && !currentPreferences.specializations.includes(value) ? "text-gray-400" : ""
                     }`}
                   >
-                    {specialization}
+                    {label}
                   </Label>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Recruitment Focus Section - Only shown when "Recruit and Onboard Talents" is selected */}
+          {/* Recruitment Focus Section - Only shown when "Recruiting" is selected */}
           <div
             className={`space-y-3 overflow-hidden transition-all duration-300 ease-in-out ${
               showRecruitmentFocus ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 my-0 py-0"
@@ -374,14 +386,15 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="French">French</SelectItem>
-                  <SelectItem value="Spanish">Spanish</SelectItem>
-                  <SelectItem value="Italian">Italian</SelectItem>
+                  <SelectItem value="English 🇬🇧">English 🇬🇧</SelectItem>
+                  <SelectItem value="French 🇫🇷">French 🇫🇷</SelectItem>
+                  <SelectItem value="Spanish 🇪🇸">Spanish 🇪🇸</SelectItem>
+                  <SelectItem value="Italian 🇮🇹">Italian 🇮🇹</SelectItem>
                   <SelectItem value="Arabic">Arabic</SelectItem>
-                  <SelectItem value="Portuguese">Portuguese</SelectItem>
-                  <SelectItem value="Dutch">Dutch</SelectItem>
-                  <SelectItem value="German">German</SelectItem>
+                  <SelectItem value="Portuguese 🇵🇹">Portuguese 🇵🇹</SelectItem>
+                  <SelectItem value="Dutch 🇳🇱">Dutch 🇳🇱</SelectItem>
+                  <SelectItem value="German 🇩🇪">German 🇩🇪</SelectItem>
+                  <SelectItem value="Swedish 🇸🇪">Swedish 🇸🇪</SelectItem>
                   <SelectItem value="Others">Others</SelectItem>
                 </SelectContent>
               </Select>

@@ -78,6 +78,7 @@ export default function ProfilePage() {
   // Update profile with user data when available
   useEffect(() => {
     if (user) {
+      console.log("User data:", user)
       setProfile((prev) => ({
         ...prev,
         name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
@@ -91,6 +92,7 @@ export default function ProfilePage() {
           industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
           companySize: user.preferences?.companySize || prev.preferences.companySize,
           recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
+          // Map the API specialization values directly
           specializations: user.preferences?.specialization || prev.preferences.specializations,
           languages: user.languages || prev.preferences.languages,
         },
