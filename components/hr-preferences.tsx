@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 
 // Update the HRPreferencesData interface to match the API structure
 export interface HRPreferencesData {
-  industryFocus: string[]
+  industryFocus: string[] // This will map to preferences.industries in the API
   companySize: string[]
   recruitmentFocus: string[]
   specializations: string[]
@@ -37,14 +37,20 @@ const specializationLabels: Record<string, string> = {
   "Compensation & Benefit": "Compensation & Benefits Programs",
 }
 
-// The reverse mapping for display purposes
-const specializationValues = Object.entries(specializationLabels).reduce(
-  (acc, [value, label]) => {
-    acc[label] = value
-    return acc
-  },
-  {} as Record<string, string>,
-)
+// Industry focus options from the API
+const industryOptions = [
+  "Technology & Software",
+  "Consumer Goods & E-commerce",
+  "Finance, Insurance & Fintech",
+  "Healthcare & Life Sciences",
+  "Media, Entertainment & Creative",
+  "Industrial & Manufacturing",
+  "Education & EdTech",
+  "Travel, Hospitality & Lifestyle",
+  "Nonprofit, Government & Public Sector",
+  "Professional & Business Services",
+  "Other(s)",
+]
 
 export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPreferencesProps) {
   const { toast } = useToast()
@@ -223,7 +229,7 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
 
         <Separator />
 
-        {/* Industry Focus Section */}
+        {/* Industry Focus Section - Updated with API options */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Industry Focus</h3>
           <div className="flex flex-wrap gap-2 mb-2">
@@ -254,15 +260,11 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
                   <SelectValue placeholder="Select industry" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Technology">Technology</SelectItem>
-                  <SelectItem value="Healthcare">Healthcare</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                  <SelectItem value="Education">Education</SelectItem>
-                  <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                  <SelectItem value="Retail">Retail</SelectItem>
-                  <SelectItem value="Hospitality">Hospitality</SelectItem>
-                  <SelectItem value="Non-profit">Non-profit</SelectItem>
-                  <SelectItem value="Government">Government</SelectItem>
+                  {industryOptions.map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

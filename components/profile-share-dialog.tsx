@@ -18,15 +18,15 @@ import { useToast } from "@/hooks/use-toast"
 
 interface ProfileShareDialogProps {
   profileName: string
-  profileSlug: string
+  username: string
 }
 
-export function ProfileShareDialog({ profileName, profileSlug }: ProfileShareDialogProps) {
+export function ProfileShareDialog({ profileName, username }: ProfileShareDialogProps) {
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
 
   const profileUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/profile/${profileSlug}` : `/profile/${profileSlug}`
+    typeof window !== "undefined" ? `${window.location.origin}/profile/${username}` : `/profile/${username}`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(profileUrl)

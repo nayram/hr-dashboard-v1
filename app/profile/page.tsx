@@ -19,14 +19,16 @@ import Link from "next/link"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
-// Import the LogoutButton component at the top of the file
 import { LogoutButton } from "@/components/logout-button"
+import { UsernameCreationModal } from "@/components/username-creation-modal"
 
 export default function ProfilePage() {
   const { toast } = useToast()
   const { user, logout } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [date, setDate] = useState<Date | undefined>(new Date())
+  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [usernameRedirectPath, setUsernameRedirectPath] = useState<string | undefined>()
   const [availability, setAvailability] = useState<{ [key: string]: boolean }>({
     monday: true,
     tuesday: true,
@@ -89,10 +91,10 @@ export default function ProfilePage() {
         skills: prev.skills,
         preferences: {
           ...prev.preferences,
+          // Map the API industries values to industryFocus
           industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
           companySize: user.preferences?.companySize || prev.preferences.companySize,
           recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
-          // Map the API specialization values directly
           specializations: user.preferences?.specialization || prev.preferences.specializations,
           languages: user.languages || prev.preferences.languages,
         },
@@ -100,13 +102,48 @@ export default function ProfilePage() {
     }
   }, [user])
 
+  // Update the handleCopyProfileLink function to use username consistently
   const handleCopyProfileLink = () => {
-    const profileLink = `${window.location.origin}/profile/${profile.name.toLowerCase().replace(/\s+/g, "-")}`
+    // Check if user has a username
+    if (!user?.username) {
+      setUsernameRedirectPath("copy")
+      setShowUsernameModal(true)
+      return
+    }
+
+    const profileLink = `${window.location.origin}/profile/${user.username}`
     navigator.clipboard.writeText(profileLink)
     toast({
       title: "Link copied!",
       description: "Profile link has been copied to clipboard",
     })
+  }
+
+  const handleViewPublicProfile = () => {
+    // Check if user has a username
+    if (!user?.username) {
+      setUsernameRedirectPath("view")
+      setShowUsernameModal(true)
+      return
+    }
+  }
+
+  const handleUsernameCreated = (username: string) => {
+    setShowUsernameModal(false)
+
+    // Handle the action based on the redirect path
+    if (usernameRedirectPath === "copy") {
+      const profileLink = `${window.location.origin}/profile/${username}`
+      navigator.clipboard.writeText(profileLink)
+      toast({
+        title: "Link copied!",
+        description: "Profile link has been copied to clipboard",
+      })
+    } else if (usernameRedirectPath === "view") {
+      window.open(`/profile/${username}`, "_blank")
+    }
+
+    setUsernameRedirectPath(undefined)
   }
 
   const toggleDay = (day: string) => {
@@ -147,15 +184,39 @@ export default function ProfilePage() {
             <Copy className="h-4 w-4 mr-2" />
             Copy Profile Link
           </Button>
-          <Link href={`/profile/${profile.name.toLowerCase().replace(/\s+/g, "-")}`} target="_blank">
-            <Button variant="outline">
+          {user?.username ? (
+            <Link href={`/profile/${user.username}`} target="_blank">
+              <Button variant="outline">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Public Profile
+              </Button>
+            </Link>
+          ) : (
+            <Button variant="outline" onClick={handleViewPublicProfile}>
               <ExternalLink className="h-4 w-4 mr-2" />
               View Public Profile
             </Button>
-          </Link>
+          )}
           <LogoutButton />
         </div>
       </div>
+
+      {!user?.username && (
+        <Alert className="mb-6 border-yellow-200 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertTitle className="text-yellow-800">Username Required</AlertTitle>
+          <AlertDescription className="text-yellow-700">
+            You need to create a username to share your profile.
+            <Button
+              variant="link"
+              className="p-0 h-auto text-yellow-700 font-semibold hover:text-yellow-900"
+              onClick={() => setShowUsernameModal(true)}
+            >
+              Create username now
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Alert className="mb-6">
         <AlertCircle className="h-4 w-4" />
@@ -270,6 +331,7 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-xl font-semibold">{profile.name}</h3>
                       <p className="text-gray-500">{profile.title}</p>
+                      {user?.username && <p className="text-sm text-gray-400 mt-1">@{user.username}</p>}
                     </div>
                     <div className="flex flex-col gap-2 text-sm">
                       <div className="flex items-center gap-2">
@@ -692,6 +754,14 @@ SPHR"
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Username Creation Modal */}
+      <UsernameCreationModal
+        isOpen={showUsernameModal}
+        onClose={() => setShowUsernameModal(false)}
+        onSuccess={handleUsernameCreated}
+        redirectPath={usernameRedirectPath}
+      />
     </div>
   )
 }

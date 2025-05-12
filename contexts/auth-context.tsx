@@ -14,6 +14,7 @@ interface User {
   email: string
   phoneNumber: string
   bio: string
+  username: string | null
   // Add other user properties as needed
   [key: string]: any
 }
@@ -25,6 +26,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (token: string) => Promise<void>
   logout: () => void
+  updateUser: (userData: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -65,6 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Your session has expired. Please log in again.",
         variant: "destructive",
       })
+    }
+  }
+
+  // Update user data
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      setUser({ ...user, ...userData })
     }
   }
 
@@ -129,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user && !!token,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

@@ -6,6 +6,8 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
   VERIFY: `${API_BASE_URL}/auth/verify`,
   USER: `${API_BASE_URL}/users/me`,
+  SET_USERNAME: `${API_BASE_URL}/users/username`,
+  GET_USER_BY_USERNAME: `${API_BASE_URL}/users/username/`,
 }
 
 // Track if verification is in progress
@@ -75,6 +77,43 @@ export async function getUserDetails(token: string): Promise<any> {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || "Failed to fetch user details")
+  }
+
+  return response.json()
+}
+
+// Set username
+export async function setUsername(token: string, username: string): Promise<{ username: string }> {
+  const response = await fetch(API_ENDPOINTS.SET_USERNAME, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to set username")
+  }
+
+  return data
+}
+
+// Get user by username (public)
+export async function getUserByUsername(username: string): Promise<any> {
+  const response = await fetch(`${API_ENDPOINTS.GET_USER_BY_USERNAME}${username}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
     },
   })
 
