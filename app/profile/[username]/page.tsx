@@ -334,7 +334,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
                       >
-                        {formattedProfile.linkedin}
+                        LinkedIn
                       </a>
                     </div>
                   )}
@@ -347,7 +347,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
                       >
-                        {formattedProfile.twitter}
+                        Twitter
                       </a>
                     </div>
                   )}
