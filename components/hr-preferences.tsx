@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -405,18 +404,6 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
         </div>
 
         <Separator />
-
-        {/* Additional Notes Section */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Additional Notes</h3>
-          <Textarea
-            value={currentPreferences.additionalNotes}
-            onChange={(e) => handleInputChange("additionalNotes", e.target.value)}
-            placeholder="Any additional information about your preferences or expertise..."
-            disabled={readOnly}
-            className="min-h-[100px]"
-          />
-        </div>
 
         {!readOnly && (
           <div className="flex justify-end mt-6">
