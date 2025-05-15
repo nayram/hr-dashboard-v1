@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { AlertCircle, Copy, ExternalLink, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -21,6 +20,7 @@ import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { LogoutButton } from "@/components/logout-button"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
+import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Twitter } from "lucide-react"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -716,35 +716,37 @@ SPHR"
                   <select
                     id="timezone"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    defaultValue="America/Los_Angeles"
+                    defaultValue="Europe/London"
                   >
+                    {/* Americas */}
                     <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
                     <option value="America/Denver">Mountain Time (US & Canada)</option>
                     <option value="America/Chicago">Central Time (US & Canada)</option>
                     <option value="America/New_York">Eastern Time (US & Canada)</option>
-                    <option value="Europe/London">London</option>
-                    <option value="Europe/Paris">Paris</option>
-                    <option value="Asia/Tokyo">Tokyo</option>
-                    <option value="Australia/Sydney">Sydney</option>
-                  </select>
-                </div>
-              </div>
+                    <option value="America/Sao_Paulo">São Paulo (Brazil)</option>
+                    <option value="America/Argentina/Buenos_Aires">Buenos Aires (Argentina)</option>
 
-              <div>
-                <h3 className="text-lg font-medium mb-4">Meeting Preferences</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch id="pref-virtual" defaultChecked />
-                    <Label htmlFor="pref-virtual">Available for virtual meetings</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="pref-in-person" />
-                    <Label htmlFor="pref-in-person">Available for in-person meetings</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch id="pref-phone" defaultChecked />
-                    <Label htmlFor="pref-phone">Available for phone calls</Label>
-                  </div>
+                    {/* Europe & Africa */}
+                    <option value="Europe/London">London (UK)</option>
+                    <option value="Europe/Paris">Central European Time (Paris, Berlin)</option>
+                    <option value="Europe/Helsinki">Eastern European Time (Helsinki, Athens)</option>
+                    <option value="Europe/Moscow">Moscow (Russia)</option>
+                    <option value="Africa/Cairo">Cairo (Egypt)</option>
+                    <option value="Africa/Johannesburg">Johannesburg (South Africa)</option>
+                    <option value="Africa/Lagos">Lagos (Nigeria)</option>
+                    <option value="Africa/Nairobi">Nairobi (Kenya)</option>
+
+                    {/* Asia & Oceania */}
+                    <option value="Asia/Dubai">Dubai (UAE)</option>
+                    <option value="Asia/Kolkata">Mumbai, New Delhi (India)</option>
+                    <option value="Asia/Bangkok">Bangkok (Thailand)</option>
+                    <option value="Asia/Singapore">Singapore</option>
+                    <option value="Asia/Shanghai">Beijing, Shanghai (China)</option>
+                    <option value="Asia/Tokyo">Tokyo (Japan)</option>
+                    <option value="Asia/Seoul">Seoul (South Korea)</option>
+                    <option value="Australia/Sydney">Sydney (Australia)</option>
+                    <option value="Pacific/Auckland">Auckland (New Zealand)</option>
+                  </select>
                 </div>
               </div>
             </CardContent>
