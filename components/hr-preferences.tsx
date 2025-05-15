@@ -332,24 +332,21 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
 
         <Separator />
 
-        {/* Work Style Section */}
+        {/* Work Setup Section (formerly Work Style) */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Preferred Work Style</h3>
+          <h3 className="text-lg font-medium">Work Setup</h3>
           <Select
             value={currentPreferences.workStyle}
             onValueChange={(value) => handleInputChange("workStyle", value)}
             disabled={readOnly}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select work style" />
+              <SelectValue placeholder="Select work setup" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="strategic">Strategic (focus on long-term planning)</SelectItem>
-              <SelectItem value="operational">Operational (focus on day-to-day execution)</SelectItem>
-              <SelectItem value="consultative">Consultative (advisory approach)</SelectItem>
-              <SelectItem value="hands-on">Hands-on (direct involvement)</SelectItem>
-              <SelectItem value="collaborative">Collaborative (team-oriented)</SelectItem>
-              <SelectItem value="independent">Independent (self-directed)</SelectItem>
+              <SelectItem value="remote">Remote</SelectItem>
+              <SelectItem value="hybrid">Hybrid</SelectItem>
+              <SelectItem value="onsite">Onsite</SelectItem>
             </SelectContent>
           </Select>
         </div>

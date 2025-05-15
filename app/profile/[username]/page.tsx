@@ -51,21 +51,28 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     fetchUserProfile()
   }, [params.username, toast])
 
-  // Helper function to get readable work style
-  const getWorkStyleLabel = (style: string) => {
+  // Helper function to get readable work setup
+  const getWorkSetupLabel = (style: string) => {
     switch (style) {
+      case "remote":
+        return "Remote"
+      case "hybrid":
+        return "Hybrid"
+      case "onsite":
+        return "Onsite"
+      // Keep old values for backward compatibility
       case "strategic":
-        return "Strategic (focus on long-term planning)"
+        return "Strategic"
       case "operational":
-        return "Operational (focus on day-to-day execution)"
+        return "Operational"
       case "consultative":
-        return "Consultative (advisory approach)"
+        return "Consultative"
       case "hands-on":
-        return "Hands-on (direct involvement)"
+        return "Hands-on"
       case "collaborative":
-        return "Collaborative (team-oriented)"
+        return "Collaborative"
       case "independent":
-        return "Independent (self-directed)"
+        return "Independent"
       default:
         return style
     }
@@ -229,8 +236,8 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Work Style</h4>
-                    <p>{getWorkStyleLabel(formattedProfile.preferences.workStyle)}</p>
+                    <h4 className="text-sm font-medium mb-1">Work Setup</h4>
+                    <p>{getWorkSetupLabel(formattedProfile.preferences.workStyle)}</p>
                   </div>
 
                   <div>
