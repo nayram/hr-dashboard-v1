@@ -133,7 +133,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
       startTime: profile.availability?.startTime || "09:00",
       endTime: profile.availability?.endTime || "17:00",
-      timezone: profile.availability?.timezone || "Pacific Time (US & Canada)",
+      timezone: profile.availability?.timeZone || "Europe/Paris",
       preferences: profile.availability?.preferences || ["Virtual meetings"],
     },
     preferences: {

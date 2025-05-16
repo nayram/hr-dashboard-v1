@@ -40,7 +40,7 @@ export default function ProfilePage() {
   })
   const [startTime, setStartTime] = useState<string>("09:00")
   const [endTime, setEndTime] = useState<string>("17:00")
-  const [timezone, setTimezone] = useState<string>("Europe/London")
+  const [timezone, setTimezone] = useState<string>("Europe/Paris")
 
   const [profile, setProfile] = useState({
     name: "",
@@ -145,10 +145,8 @@ export default function ProfilePage() {
         setEndTime(user.availability.endTime)
       }
 
-      // Update timezone if available
-      if (user.availability.timezone) {
-        setTimezone(user.availability.timezone)
-      }
+      // Update timezone if available, otherwise use Europe/Paris as default
+      setTimezone(user.availability.timeZone || "Europe/Paris")
     }
   }, [user])
 
@@ -236,7 +234,7 @@ export default function ProfilePage() {
       days: selectedDays,
       startTime,
       endTime,
-      timezone,
+      timeZone: timezone, // Note: using timeZone to match the API field name
     }
 
     console.log("Saving availability:", availabilityData)
