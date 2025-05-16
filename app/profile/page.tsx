@@ -382,7 +382,7 @@ export default function ProfilePage() {
                       <Label htmlFor="linkedin">LinkedIn</Label>
                       <Input
                         id="linkedin"
-                        value={profile.location}
+                        value={profile.linkedin}
                         onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
                       />
                     </div>
