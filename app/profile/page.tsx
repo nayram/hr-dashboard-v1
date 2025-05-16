@@ -91,6 +91,7 @@ export default function ProfilePage() {
         phone: user.phoneNumber || prev.phone,
         location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
         about: user.bio || prev.about,
+        linkedin: user.linkedin,
         skills: prev.skills,
         preferences: {
           ...prev.preferences,
