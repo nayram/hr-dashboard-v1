@@ -356,9 +356,9 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
               <SelectValue placeholder="Select work setup" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="remote">Remote</SelectItem>
-              <SelectItem value="hybrid">Hybrid</SelectItem>
-              <SelectItem value="onsite">Onsite</SelectItem>
+              <SelectItem value="Remote">Remote</SelectItem>
+              <SelectItem value="Hybrid">Hybrid</SelectItem>
+              <SelectItem value="Onsite">Onsite</SelectItem>
             </SelectContent>
           </Select>
         </div>
