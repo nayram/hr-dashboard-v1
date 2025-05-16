@@ -38,6 +38,9 @@ export default function ProfilePage() {
     saturday: false,
     sunday: false,
   })
+  const [startTime, setStartTime] = useState<string>("09:00")
+  const [endTime, setEndTime] = useState<string>("17:00")
+  const [timezone, setTimezone] = useState<string>("Europe/London")
 
   const [profile, setProfile] = useState({
     name: "",
@@ -109,26 +112,43 @@ export default function ProfilePage() {
 
   // Update availability when user data is loaded
   useEffect(() => {
-    if (user?.availability?.days) {
-      const newAvailability = {
-        monday: false,
-        tuesday: false,
-        wednesday: false,
-        thursday: false,
-        friday: false,
-        saturday: false,
-        sunday: false,
+    if (user?.availability) {
+      // Update weekly availability days
+      if (user.availability.days) {
+        const newAvailability = {
+          monday: false,
+          tuesday: false,
+          wednesday: false,
+          thursday: false,
+          friday: false,
+          saturday: false,
+          sunday: false,
+        }
+
+        // Convert days to lowercase for case-insensitive matching
+        user.availability.days.forEach((day: string) => {
+          const dayLower = day.toLowerCase()
+          if (dayLower in newAvailability) {
+            newAvailability[dayLower] = true
+          }
+        })
+
+        setAvailability(newAvailability)
       }
 
-      // Convert days to lowercase for case-insensitive matching
-      user.availability.days.forEach((day: string) => {
-        const dayLower = day.toLowerCase()
-        if (dayLower in newAvailability) {
-          newAvailability[dayLower] = true
-        }
-      })
+      // Update working hours
+      if (user.availability.startTime) {
+        setStartTime(user.availability.startTime)
+      }
 
-      setAvailability(newAvailability)
+      if (user.availability.endTime) {
+        setEndTime(user.availability.endTime)
+      }
+
+      // Update timezone if available
+      if (user.availability.timezone) {
+        setTimezone(user.availability.timezone)
+      }
     }
   }, [user])
 
@@ -203,6 +223,30 @@ export default function ProfilePage() {
       ...prev,
       profileImage: imageUrl,
     }))
+  }
+
+  const handleSaveAvailability = () => {
+    // Get selected days as an array of capitalized day names
+    const selectedDays = Object.entries(availability)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+
+    // Prepare availability data
+    const availabilityData = {
+      days: selectedDays,
+      startTime,
+      endTime,
+      timezone,
+    }
+
+    console.log("Saving availability:", availabilityData)
+
+    // Here you would typically send this data to your API
+    // For now, just show a success toast
+    toast({
+      title: "Availability saved",
+      description: "Your availability settings have been updated.",
+    })
   }
 
   return (
@@ -733,22 +777,13 @@ SPHR"
                     <Input
                       id="start-time"
                       type="time"
-                      value={user?.availability?.startTime || "09:00"}
-                      onChange={(e) => {
-                        // Handle the change if needed
-                      }}
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="end-time">End Time</Label>
-                    <Input
-                      id="end-time"
-                      type="time"
-                      value={user?.availability?.endTime || "17:00"}
-                      onChange={(e) => {
-                        // Handle the change if needed
-                      }}
-                    />
+                    <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -760,7 +795,8 @@ SPHR"
                   <select
                     id="timezone"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    defaultValue="Europe/London"
+                    value={timezone}
+                    onChange={(e) => setTimezone(e.target.value)}
                   >
                     {/* Americas */}
                     <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
@@ -795,7 +831,9 @@ SPHR"
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="ml-auto">Save Availability</Button>
+              <Button className="ml-auto" onClick={handleSaveAvailability}>
+                Save Availability
+              </Button>
             </CardFooter>
           </Card>
         </TabsContent>
