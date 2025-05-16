@@ -16,7 +16,8 @@ export interface HRPreferencesData {
   companySize: string[]
   recruitmentFocus: string[]
   specializations: string[]
-  workStyle: string
+  workStyle: string // Keep for backward compatibility
+  setupType: string // New field that maps to the API
   languages: string[]
   additionalNotes: string
 }
@@ -53,7 +54,11 @@ const industryOptions = [
 
 export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPreferencesProps) {
   const { toast } = useToast()
-  const [currentPreferences, setCurrentPreferences] = useState<HRPreferencesData>(preferences)
+  const [currentPreferences, setCurrentPreferences] = useState<HRPreferencesData>({
+    ...preferences,
+    // Initialize setupType from workStyle if setupType is not provided (for backward compatibility)
+    setupType: preferences.setupType || preferences.workStyle || "",
+  })
   const [showRecruitmentFocus, setShowRecruitmentFocus] = useState(
     currentPreferences.specializations.includes("Recruiting"),
   )
@@ -70,7 +75,14 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
   }
 
   const handleSave = () => {
-    onUpdate(currentPreferences)
+    // When saving, ensure both setupType and workStyle are updated
+    // This maintains backward compatibility while using the new field
+    const updatedPreferences = {
+      ...currentPreferences,
+      // Ensure workStyle is also updated for backward compatibility
+      workStyle: currentPreferences.setupType,
+    }
+    onUpdate(updatedPreferences)
     toast({
       title: "Preferences saved",
       description: "Your HR preferences have been updated.",
@@ -336,8 +348,8 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Work Setup</h3>
           <Select
-            value={currentPreferences.workStyle}
-            onValueChange={(value) => handleInputChange("workStyle", value)}
+            value={currentPreferences.setupType}
+            onValueChange={(value) => handleInputChange("setupType", value)}
             disabled={readOnly}
           >
             <SelectTrigger className="w-full">

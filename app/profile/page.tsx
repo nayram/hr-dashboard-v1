@@ -72,6 +72,7 @@ export default function ProfilePage() {
       recruitmentFocus: [] as string[],
       specializations: [] as string[],
       workStyle: "",
+      setupType: "",
       languages: [] as string[],
       additionalNotes: "",
     } as HRPreferencesData,
@@ -96,6 +97,10 @@ export default function ProfilePage() {
           companySize: user.preferences?.companySize || prev.preferences.companySize,
           recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
           specializations: user.preferences?.specialization || prev.preferences.specializations,
+          // Map setupType directly from the API
+          setupType: user.preferences?.setupType || prev.preferences.setupType,
+          // Keep workStyle for backward compatibility
+          workStyle: user.preferences?.workStyle || prev.preferences.workStyle,
           languages: user.languages || prev.preferences.languages,
         },
       }))
@@ -664,6 +669,8 @@ SPHR"
         <TabsContent value="preferences">
           <HRPreferences preferences={profile.preferences} onUpdate={handleUpdatePreferences} />
         </TabsContent>
+
+        <TabsContent value="availability"></TabsContent>
 
         <TabsContent value="availability">
           <Card>

@@ -52,29 +52,16 @@ export default function PublicProfilePage({ params }: { params: { username: stri
   }, [params.username, toast])
 
   // Helper function to get readable work setup
-  const getWorkSetupLabel = (style: string) => {
-    switch (style) {
+  const getWorkSetupLabel = (setupType: string) => {
+    switch (setupType) {
       case "remote":
         return "Remote"
       case "hybrid":
         return "Hybrid"
       case "onsite":
         return "Onsite"
-      // Keep old values for backward compatibility
-      case "strategic":
-        return "Strategic"
-      case "operational":
-        return "Operational"
-      case "consultative":
-        return "Consultative"
-      case "hands-on":
-        return "Hands-on"
-      case "collaborative":
-        return "Collaborative"
-      case "independent":
-        return "Independent"
       default:
-        return style
+        return setupType || "Not specified"
     }
   }
 
@@ -148,10 +135,14 @@ export default function PublicProfilePage({ params }: { params: { username: stri
       preferences: profile.availability?.preferences || ["Virtual meetings"],
     },
     preferences: {
+      ...profile.preferences,
       industryFocus: profile.preferences?.industries || [],
       companySize: profile.preferences?.companySize || [],
       recruitmentFocus: profile.preferences?.recruitmentRoles || [],
       specializations: profile.preferences?.specialization || [],
+      // Use setupType from API directly
+      setupType: profile.preferences?.setupType || "",
+      // Keep workStyle for backward compatibility
       workStyle: profile.preferences?.workStyle || "",
       languages: profile.languages || [],
       additionalNotes: profile.preferences?.additionalNotes || "",
@@ -237,7 +228,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
 
                   <div>
                     <h4 className="text-sm font-medium mb-1">Work Setup</h4>
-                    <p>{getWorkSetupLabel(formattedProfile.preferences.workStyle)}</p>
+                    <p>{getWorkSetupLabel(formattedProfile.preferences.setupType)}</p>
                   </div>
 
                   <div>
