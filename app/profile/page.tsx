@@ -415,8 +415,7 @@ export default function ProfilePage() {
                         <MapPin className="h-4 w-4 text-gray-500" />
                         <span>{profile.location}</span>
                       </div>
-                      {profile.linkedin && (
-                        <div className="flex items-center gap-2">
+                       <div className="flex items-center gap-2">
                           <Linkedin className="h-4 w-4 text-gray-500" />
                           <a
                             href={profile.linkedin}
@@ -424,10 +423,9 @@ export default function ProfilePage() {
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
                           >
-                            {profile.linkedin}
+                            LinkedIn
                           </a>
                         </div>
-                      )}
                     </div>
                   </div>
                 )}
