@@ -56,7 +56,7 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
   const { toast } = useToast()
   const [currentPreferences, setCurrentPreferences] = useState<HRPreferencesData>({
     ...preferences,
-    // Initialize setupType from workStyle if setupType is not provided (for backward compatibility)
+    // Initialize setupType from the API value, fall back to workStyle for backward compatibility
     setupType: preferences.setupType || preferences.workStyle || "",
   })
   const [showRecruitmentFocus, setShowRecruitmentFocus] = useState(
