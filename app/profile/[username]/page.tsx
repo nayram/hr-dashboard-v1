@@ -131,6 +131,8 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     availability: {
       days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
+      startTime: profile.availability?.startTime || "09:00",
+      endTime: profile.availability?.endTime || "17:00",
       timezone: profile.availability?.timezone || "Pacific Time (US & Canada)",
       preferences: profile.availability?.preferences || ["Virtual meetings"],
     },
@@ -363,7 +365,11 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   </div>
                   <div>
                     <h4 className="text-sm font-medium mb-1">Hours</h4>
-                    <p>{formattedProfile.availability.hours}</p>
+                    <p>
+                      {formattedProfile.availability.startTime && formattedProfile.availability.endTime
+                        ? `${formattedProfile.availability.startTime} - ${formattedProfile.availability.endTime}`
+                        : formattedProfile.availability.hours}
+                    </p>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium mb-1">Time Zone</h4>

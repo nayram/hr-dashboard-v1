@@ -730,11 +730,25 @@ SPHR"
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="start-time">Start Time</Label>
-                    <Input id="start-time" type="time" defaultValue="09:00" />
+                    <Input
+                      id="start-time"
+                      type="time"
+                      value={user?.availability?.startTime || "09:00"}
+                      onChange={(e) => {
+                        // Handle the change if needed
+                      }}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="end-time">End Time</Label>
-                    <Input id="end-time" type="time" defaultValue="17:00" />
+                    <Input
+                      id="end-time"
+                      type="time"
+                      value={user?.availability?.endTime || "17:00"}
+                      onChange={(e) => {
+                        // Handle the change if needed
+                      }}
+                    />
                   </div>
                 </div>
               </div>
