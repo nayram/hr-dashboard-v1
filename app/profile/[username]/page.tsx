@@ -129,7 +129,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     education: profile.education || [],
     certifications: profile.certifications || [],
     availability: {
-      days: profile.availability?.days || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
       timezone: profile.availability?.timezone || "Pacific Time (US & Canada)",
       preferences: profile.availability?.preferences || ["Virtual meetings"],

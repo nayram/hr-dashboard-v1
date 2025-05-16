@@ -30,11 +30,11 @@ export default function ProfilePage() {
   const [showUsernameModal, setShowUsernameModal] = useState(false)
   const [usernameRedirectPath, setUsernameRedirectPath] = useState<string | undefined>()
   const [availability, setAvailability] = useState<{ [key: string]: boolean }>({
-    monday: true,
-    tuesday: true,
-    wednesday: true,
-    thursday: true,
-    friday: true,
+    monday: false,
+    tuesday: false,
+    wednesday: false,
+    thursday: false,
+    friday: false,
     saturday: false,
     sunday: false,
   })
@@ -104,6 +104,31 @@ export default function ProfilePage() {
           languages: user.languages || prev.preferences.languages,
         },
       }))
+    }
+  }, [user])
+
+  // Update availability when user data is loaded
+  useEffect(() => {
+    if (user?.availability?.days) {
+      const newAvailability = {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false,
+      }
+
+      // Convert days to lowercase for case-insensitive matching
+      user.availability.days.forEach((day: string) => {
+        const dayLower = day.toLowerCase()
+        if (dayLower in newAvailability) {
+          newAvailability[dayLower] = true
+        }
+      })
+
+      setAvailability(newAvailability)
     }
   }, [user])
 
@@ -669,8 +694,6 @@ SPHR"
         <TabsContent value="preferences">
           <HRPreferences preferences={profile.preferences} onUpdate={handleUpdatePreferences} />
         </TabsContent>
-
-        <TabsContent value="availability"></TabsContent>
 
         <TabsContent value="availability">
           <Card>
