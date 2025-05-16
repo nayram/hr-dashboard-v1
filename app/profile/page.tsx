@@ -84,7 +84,6 @@ export default function ProfilePage() {
   // Update profile with user data when available
   useEffect(() => {
     if (user) {
-      console.log("User data:", user)
       setProfile((prev) => ({
         ...prev,
         name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
@@ -236,8 +235,6 @@ export default function ProfilePage() {
       endTime,
       timeZone: timezone, // Note: using timeZone to match the API field name
     }
-
-    console.log("Saving availability:", availabilityData)
 
     // Here you would typically send this data to your API
     // For now, just show a success toast
@@ -422,25 +419,12 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Linkedin className="h-4 w-4 text-gray-500" />
                           <a
-                            href={`https://${profile.linkedin}`}
+                            href={profile.linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
                           >
                             {profile.linkedin}
-                          </a>
-                        </div>
-                      )}
-                      {profile.twitter && (
-                        <div className="flex items-center gap-2">
-                          <Twitter className="h-4 w-4 text-gray-500" />
-                          <a
-                            href={`https://${profile.twitter}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {profile.twitter}
                           </a>
                         </div>
                       )}
