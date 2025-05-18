@@ -127,7 +127,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     skills: profile.skills || [],
     experience: profile.experience || [],
     education: profile.education || [],
-    certifications: profile.certifications || [],
     availability: {
       days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
@@ -255,8 +254,13 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                         <div>
                           <h4 className="font-medium">{exp.title || "No title provided"}</h4>
                           <p className="text-gray-500">{exp.company || "No company provided"}</p>
+                          {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
                         </div>
-                        <span className="text-sm text-gray-500">{exp.period || "No period provided"}</span>
+                        <span className="text-sm text-gray-500">
+                          {exp.startDate && exp.endDate
+                            ? `${exp.startDate} - ${exp.endDate}`
+                            : exp.period || "No period provided"}
+                        </span>
                       </div>
                       <p className="text-sm mt-1">{exp.description || "No description provided"}</p>
                       {index < formattedProfile.experience.length - 1 && <Separator className="my-3" />}
@@ -287,19 +291,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                     <p className="text-gray-500">No education information provided.</p>
                   )}
                 </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Certifications</h3>
-                {formattedProfile.certifications.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1">
-                    {formattedProfile.certifications.map((cert: string, index: number) => (
-                      <li key={index}>{cert}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500">No certifications provided.</p>
-                )}
               </div>
             </div>
 

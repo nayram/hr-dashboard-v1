@@ -20,7 +20,7 @@ import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { LogoutButton } from "@/components/logout-button"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
-import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Twitter } from "lucide-react"
+import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin } from "lucide-react"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -57,8 +57,10 @@ export default function ProfilePage() {
       {
         title: "",
         company: "",
-        period: "",
+        startDate: "",
+        endDate: "",
         description: "",
+        location: "",
       },
     ],
     education: [
@@ -68,7 +70,6 @@ export default function ProfilePage() {
         year: "",
       },
     ],
-    certifications: [] as string[],
     preferences: {
       industryFocus: [] as string[],
       companySize: [] as string[],
@@ -92,7 +93,9 @@ export default function ProfilePage() {
         location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
         about: user.bio || prev.about,
         linkedin: user.linkedin,
-        skills: prev.skills,
+        skills: user.skills || prev.skills,
+        experience: user.experience || prev.experience,
+        education: user.education || prev.education,
         preferences: {
           ...prev.preferences,
           // Map the API industries values to industryFocus
@@ -416,17 +419,17 @@ export default function ProfilePage() {
                         <MapPin className="h-4 w-4 text-gray-500" />
                         <span>{profile.location}</span>
                       </div>
-                       <div className="flex items-center gap-2">
-                          <Linkedin className="h-4 w-4 text-gray-500" />
-                          <a
-                            href={profile.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            LinkedIn
-                          </a>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Linkedin className="h-4 w-4 text-gray-500" />
+                        <a
+                          href={profile.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          LinkedIn
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -521,14 +524,40 @@ export default function ProfilePage() {
                                 />
                               </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`start-date-${index}`}>Start Date</Label>
+                                <Input
+                                  id={`start-date-${index}`}
+                                  value={exp.startDate || ""}
+                                  onChange={(e) => {
+                                    const newExp = [...profile.experience]
+                                    newExp[index].startDate = e.target.value
+                                    setProfile({ ...profile, experience: newExp })
+                                  }}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`end-date-${index}`}>End Date</Label>
+                                <Input
+                                  id={`end-date-${index}`}
+                                  value={exp.endDate || ""}
+                                  onChange={(e) => {
+                                    const newExp = [...profile.experience]
+                                    newExp[index].endDate = e.target.value
+                                    setProfile({ ...profile, experience: newExp })
+                                  }}
+                                />
+                              </div>
+                            </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`period-${index}`}>Period</Label>
+                              <Label htmlFor={`location-${index}`}>Location</Label>
                               <Input
-                                id={`period-${index}`}
-                                value={exp.period}
+                                id={`location-${index}`}
+                                value={exp.location || ""}
                                 onChange={(e) => {
                                   const newExp = [...profile.experience]
-                                  newExp[index].period = e.target.value
+                                  newExp[index].location = e.target.value
                                   setProfile({ ...profile, experience: newExp })
                                 }}
                               />
@@ -553,8 +582,13 @@ export default function ProfilePage() {
                               <div>
                                 <h3 className="font-semibold">{exp.title || "No title provided"}</h3>
                                 <p className="text-gray-500">{exp.company || "No company provided"}</p>
+                                {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
                               </div>
-                              <span className="text-sm text-gray-500">{exp.period || "No period provided"}</span>
+                              <span className="text-sm text-gray-500">
+                                {exp.startDate && exp.endDate
+                                  ? `${exp.startDate} - ${exp.endDate}`
+                                  : exp.period || "No period provided"}
+                              </span>
                             </div>
                             <p>{exp.description || "No description provided"}</p>
                             {index < profile.experience.length - 1 && <Separator className="my-4" />}
@@ -570,7 +604,14 @@ export default function ProfilePage() {
                             ...profile,
                             experience: [
                               ...profile.experience,
-                              { title: "", company: "", period: "", description: "" },
+                              {
+                                title: "",
+                                company: "",
+                                startDate: "",
+                                endDate: "",
+                                description: "",
+                                location: "",
+                              },
                             ],
                           })
                         }
@@ -660,47 +701,6 @@ export default function ProfilePage() {
                       </Button>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Certifications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEditing ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="certifications">Certifications (one per line)</Label>
-                      <Textarea
-                        id="certifications"
-                        value={profile.certifications.join("\n")}
-                        onChange={(e) =>
-                          setProfile({
-                            ...profile,
-                            certifications: e.target.value
-                              .split("\n")
-                              .map((cert) => cert.trim())
-                              .filter((cert) => cert),
-                          })
-                        }
-                        placeholder="SHRM-CP
-PHR
-SPHR"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      {profile.certifications.length > 0 ? (
-                        <ul className="list-disc pl-5 space-y-1">
-                          {profile.certifications.map((cert, index) => (
-                            <li key={index}>{cert}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500">No certifications added yet.</p>
-                      )}
-                    </>
-                  )}
                 </CardContent>
               </Card>
 
