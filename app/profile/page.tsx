@@ -108,19 +108,31 @@ export default function ProfilePage() {
     return format(date, "MM/yyyy")
   }
 
+  // Helper function to sort experiences by startDate (most recent first)
+  const sortExperiencesByDate = (experiences: any[]) => {
+    return [...experiences].sort((a, b) => {
+      // Handle "Present" for end date (should be considered as the most recent)
+      if (a.endDate === "Present" && b.endDate !== "Present") return -1
+      if (a.endDate !== "Present" && b.endDate === "Present") return 1
+
+      // Compare start dates (most recent first)
+      const dateA = parseDateString(a.startDate)
+      const dateB = parseDateString(b.startDate)
+
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+
+      return dateB.getTime() - dateA.getTime()
+    })
+  }
+
   // Update profile with user data when available
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
         // Sort experience by startDate (most recent first)
-        const sortedExperience = user.experience
-          ? [...user.experience].sort((a, b) => {
-              // Convert dates to comparable format (assuming MM/YYYY format)
-              const dateA = a.startDate ? new Date(a.startDate.split("/").reverse().join("/")) : new Date(0)
-              const dateB = b.startDate ? new Date(b.startDate.split("/").reverse().join("/")) : new Date(0)
-              return dateB.getTime() - dateA.getTime() // Most recent first
-            })
-          : prev.experience
+        const sortedExperience = user.experience ? sortExperiencesByDate(user.experience) : prev.experience
 
         // Sort education by year (most recent first)
         const sortedEducation = user.education
@@ -263,6 +275,13 @@ export default function ProfilePage() {
       })
       return
     }
+
+    // Sort experiences by date before saving
+    const sortedExperiences = sortExperiencesByDate(profile.experience)
+    setProfile({
+      ...profile,
+      experience: sortedExperiences,
+    })
 
     setIsEditing(false)
     toast({
@@ -424,6 +443,27 @@ export default function ProfilePage() {
     })
   }
 
+  // Handle adding a new experience entry
+  const handleAddExperience = () => {
+    const newExperience = [
+      ...profile.experience,
+      {
+        title: "",
+        company: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+        location: "",
+        dateError: undefined,
+      },
+    ]
+
+    setProfile({ ...profile, experience: newExperience })
+  }
+
+  // Get sorted experiences for display
+  const sortedExperiences = sortExperiencesByDate(profile.experience)
+
   return (
     <div className="container mx-auto py-6 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -566,14 +606,6 @@ export default function ProfilePage() {
                         onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="twitter">Twitter</Label>
-                      <Input
-                        id="twitter"
-                        value={profile.twitter}
-                        onChange={(e) => setProfile({ ...profile, twitter: e.target.value })}
-                      />
-                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4 w-full">
@@ -670,7 +702,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {profile.experience.map((exp, index) => (
+                    {sortedExperiences.map((exp, index) => (
                       <div key={index} className="space-y-2">
                         {isEditing ? (
                           <div className="space-y-4">
@@ -682,8 +714,11 @@ export default function ProfilePage() {
                                   value={exp.title}
                                   onChange={(e) => {
                                     const newExp = [...profile.experience]
-                                    newExp[index].title = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
+                                    const expIndex = profile.experience.findIndex((item) => item === exp)
+                                    if (expIndex !== -1) {
+                                      newExp[expIndex].title = e.target.value
+                                      setProfile({ ...profile, experience: newExp })
+                                    }
                                   }}
                                 />
                               </div>
@@ -694,8 +729,11 @@ export default function ProfilePage() {
                                   value={exp.company}
                                   onChange={(e) => {
                                     const newExp = [...profile.experience]
-                                    newExp[index].company = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
+                                    const expIndex = profile.experience.findIndex((item) => item === exp)
+                                    if (expIndex !== -1) {
+                                      newExp[expIndex].company = e.target.value
+                                      setProfile({ ...profile, experience: newExp })
+                                    }
                                   }}
                                 />
                               </div>
@@ -705,7 +743,12 @@ export default function ProfilePage() {
                                 <Label htmlFor={`start-date-${index}`}>Start Date</Label>
                                 <MonthYearPicker
                                   value={parseDateString(exp.startDate)}
-                                  onChange={(date) => handleStartDateChange(index, date)}
+                                  onChange={(date) => {
+                                    const expIndex = profile.experience.findIndex((item) => item === exp)
+                                    if (expIndex !== -1) {
+                                      handleStartDateChange(expIndex, date)
+                                    }
+                                  }}
                                   placeholder="Select start date"
                                 />
                               </div>
@@ -713,11 +756,21 @@ export default function ProfilePage() {
                                 <Label htmlFor={`end-date-${index}`}>End Date</Label>
                                 <MonthYearPicker
                                   value={isDatePresent(exp.endDate) ? null : parseDateString(exp.endDate)}
-                                  onChange={(date) => handleEndDateChange(index, date)}
+                                  onChange={(date) => {
+                                    const expIndex = profile.experience.findIndex((item) => item === exp)
+                                    if (expIndex !== -1) {
+                                      handleEndDateChange(expIndex, date)
+                                    }
+                                  }}
                                   placeholder="Select end date"
                                   allowPresent={true}
                                   isPresent={isDatePresent(exp.endDate)}
-                                  onPresentChange={(isPresent) => handlePresentToggle(index, isPresent)}
+                                  onPresentChange={(isPresent) => {
+                                    const expIndex = profile.experience.findIndex((item) => item === exp)
+                                    if (expIndex !== -1) {
+                                      handlePresentToggle(expIndex, isPresent)
+                                    }
+                                  }}
                                   className={exp.dateError ? "border-red-500" : ""}
                                 />
                                 {exp.dateError && (
@@ -735,8 +788,11 @@ export default function ProfilePage() {
                                 value={exp.location || ""}
                                 onChange={(e) => {
                                   const newExp = [...profile.experience]
-                                  newExp[index].location = e.target.value
-                                  setProfile({ ...profile, experience: newExp })
+                                  const expIndex = profile.experience.findIndex((item) => item === exp)
+                                  if (expIndex !== -1) {
+                                    newExp[expIndex].location = e.target.value
+                                    setProfile({ ...profile, experience: newExp })
+                                  }
                                 }}
                               />
                             </div>
@@ -747,8 +803,11 @@ export default function ProfilePage() {
                                 value={exp.description}
                                 onChange={(e) => {
                                   const newExp = [...profile.experience]
-                                  newExp[index].description = e.target.value
-                                  setProfile({ ...profile, experience: newExp })
+                                  const expIndex = profile.experience.findIndex((item) => item === exp)
+                                  if (expIndex !== -1) {
+                                    newExp[expIndex].description = e.target.value
+                                    setProfile({ ...profile, experience: newExp })
+                                  }
                                 }}
                               />
                             </div>
@@ -756,14 +815,19 @@ export default function ProfilePage() {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => handleRemoveExperience(index)}
+                                onClick={() => {
+                                  const expIndex = profile.experience.findIndex((item) => item === exp)
+                                  if (expIndex !== -1) {
+                                    handleRemoveExperience(expIndex)
+                                  }
+                                }}
                                 disabled={profile.experience.length <= 1}
                                 className="text-xs"
                               >
                                 Remove Experience
                               </Button>
                             </div>
-                            {index < profile.experience.length - 1 && <Separator className="my-4" />}
+                            {index < sortedExperiences.length - 1 && <Separator className="my-4" />}
                           </div>
                         ) : (
                           <>
@@ -780,32 +844,13 @@ export default function ProfilePage() {
                               </span>
                             </div>
                             <p>{exp.description || "No description provided"}</p>
-                            {index < profile.experience.length - 1 && <Separator className="my-4" />}
+                            {index < sortedExperiences.length - 1 && <Separator className="my-4" />}
                           </>
                         )}
                       </div>
                     ))}
                     {isEditing && (
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setProfile({
-                            ...profile,
-                            experience: [
-                              ...profile.experience,
-                              {
-                                title: "",
-                                company: "",
-                                startDate: "",
-                                endDate: "",
-                                description: "",
-                                location: "",
-                                dateError: undefined,
-                              },
-                            ],
-                          })
-                        }
-                      >
+                      <Button variant="outline" onClick={handleAddExperience}>
                         Add Experience
                       </Button>
                     )}
