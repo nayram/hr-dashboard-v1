@@ -21,6 +21,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { LogoutButton } from "@/components/logout-button"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
 import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin } from "lucide-react"
+import { MonthYearPicker } from "@/components/month-year-picker"
+import { YearPicker } from "@/components/year-picker"
+import { format } from "date-fns"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -81,6 +84,29 @@ export default function ProfilePage() {
       additionalNotes: "",
     } as HRPreferencesData,
   })
+
+  // Helper function to parse date string to Date object
+  const parseDateString = (dateStr: string): Date | null => {
+    if (!dateStr) return null
+
+    // Handle MM/YYYY format
+    const parts = dateStr.split("/")
+    if (parts.length === 2) {
+      const month = Number.parseInt(parts[0], 10) - 1 // JS months are 0-indexed
+      const year = Number.parseInt(parts[1], 10)
+      if (!isNaN(month) && !isNaN(year)) {
+        return new Date(year, month, 1)
+      }
+    }
+
+    return null
+  }
+
+  // Helper function to format Date to string
+  const formatDateToString = (date: Date | null): string => {
+    if (!date) return ""
+    return format(date, "MM/yyyy")
+  }
 
   // Update profile with user data when available
   useEffect(() => {
@@ -226,6 +252,18 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = () => {
+    // Check for date validation errors in all experiences
+    const hasDateErrors = profile.experience.some((exp) => exp.dateError)
+
+    if (hasDateErrors) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the date errors in your experience entries",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsEditing(false)
     toast({
       title: "Profile updated",
@@ -267,6 +305,78 @@ export default function ProfilePage() {
       title: "Availability saved",
       description: "Your availability settings have been updated.",
     })
+  }
+
+  // Handle start date change
+  const handleStartDateChange = (index: number, date: Date | null) => {
+    const newExp = [...profile.experience]
+    newExp[index].startDate = date ? formatDateToString(date) : ""
+
+    // Clear date validation error when start date changes
+    if (newExp[index].dateError) {
+      delete newExp[index].dateError
+    }
+
+    // Validate dates if both start and end dates exist
+    validateDates(newExp, index)
+
+    setProfile({ ...profile, experience: newExp })
+  }
+
+  // Handle end date change
+  const handleEndDateChange = (index: number, date: Date | null) => {
+    const newExp = [...profile.experience]
+    newExp[index].endDate = date ? formatDateToString(date) : ""
+
+    // Validate dates if both start and end dates exist
+    validateDates(newExp, index)
+
+    setProfile({ ...profile, experience: newExp })
+  }
+
+  // Handle "Present" toggle for end date
+  const handlePresentToggle = (index: number, isPresent: boolean) => {
+    const newExp = [...profile.experience]
+    newExp[index].endDate = isPresent ? "Present" : ""
+
+    // Clear date validation error when toggling to "Present"
+    if (isPresent && newExp[index].dateError) {
+      delete newExp[index].dateError
+    }
+
+    setProfile({ ...profile, experience: newExp })
+  }
+
+  // Handle education year change
+  const handleEducationYearChange = (index: number, year: string) => {
+    const newEdu = [...profile.education]
+    newEdu[index].year = year
+    setProfile({ ...profile, education: newEdu })
+  }
+
+  // Validate dates
+  const validateDates = (experiences: any[], index: number) => {
+    const exp = experiences[index]
+
+    // Skip validation if end date is "Present" or either date is missing
+    if (!exp.startDate || !exp.endDate || exp.endDate === "Present") {
+      delete exp.dateError
+      return
+    }
+
+    const startDate = parseDateString(exp.startDate)
+    const endDate = parseDateString(exp.endDate)
+
+    if (startDate && endDate && endDate < startDate) {
+      exp.dateError = "End date must be after start date"
+    } else {
+      delete exp.dateError
+    }
+  }
+
+  // Check if a date string is "Present"
+  const isDatePresent = (dateStr: string): boolean => {
+    return dateStr.toLowerCase() === "present"
   }
 
   return (
@@ -548,27 +658,29 @@ export default function ProfilePage() {
                             <div className="grid grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label htmlFor={`start-date-${index}`}>Start Date</Label>
-                                <Input
-                                  id={`start-date-${index}`}
-                                  value={exp.startDate || ""}
-                                  onChange={(e) => {
-                                    const newExp = [...profile.experience]
-                                    newExp[index].startDate = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
-                                  }}
+                                <MonthYearPicker
+                                  value={parseDateString(exp.startDate)}
+                                  onChange={(date) => handleStartDateChange(index, date)}
+                                  placeholder="Select start date"
                                 />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor={`end-date-${index}`}>End Date</Label>
-                                <Input
-                                  id={`end-date-${index}`}
-                                  value={exp.endDate || ""}
-                                  onChange={(e) => {
-                                    const newExp = [...profile.experience]
-                                    newExp[index].endDate = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
-                                  }}
+                                <MonthYearPicker
+                                  value={isDatePresent(exp.endDate) ? null : parseDateString(exp.endDate)}
+                                  onChange={(date) => handleEndDateChange(index, date)}
+                                  placeholder="Select end date"
+                                  allowPresent={true}
+                                  isPresent={isDatePresent(exp.endDate)}
+                                  onPresentChange={(isPresent) => handlePresentToggle(index, isPresent)}
+                                  className={exp.dateError ? "border-red-500" : ""}
                                 />
+                                {exp.dateError && (
+                                  <div className="flex items-center mt-1 text-red-500 text-xs">
+                                    <AlertCircle className="h-3 w-3 mr-1" />
+                                    {exp.dateError}
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="space-y-2">
@@ -632,6 +744,7 @@ export default function ProfilePage() {
                                 endDate: "",
                                 description: "",
                                 location: "",
+                                dateError: undefined,
                               },
                             ],
                           })
@@ -681,14 +794,10 @@ export default function ProfilePage() {
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor={`year-${index}`}>Year</Label>
-                                <Input
-                                  id={`year-${index}`}
+                                <YearPicker
                                   value={edu.year}
-                                  onChange={(e) => {
-                                    const newEdu = [...profile.education]
-                                    newEdu[index].year = e.target.value
-                                    setProfile({ ...profile, education: newEdu })
-                                  }}
+                                  onChange={(year) => handleEducationYearChange(index, year)}
+                                  placeholder="Select graduation year"
                                 />
                               </div>
                             </div>
