@@ -125,8 +125,23 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     twitter: profile.twitter || "",
     profileImage: profile.profileImage || null,
     skills: profile.skills || [],
-    experience: profile.experience || [],
-    education: profile.education || [],
+    // Sort experience by startDate (most recent first)
+    experience: profile.experience
+      ? [...profile.experience].sort((a, b) => {
+          // Convert dates to comparable format (assuming MM/YYYY format)
+          const dateA = a.startDate ? new Date(a.startDate.split("/").reverse().join("/")) : new Date(0)
+          const dateB = b.startDate ? new Date(b.startDate.split("/").reverse().join("/")) : new Date(0)
+          return dateB.getTime() - dateA.getTime() // Most recent first
+        })
+      : [],
+    // Sort education by year (most recent first)
+    education: profile.education
+      ? [...profile.education].sort((a, b) => {
+          const yearA = Number.parseInt(a.year) || 0
+          const yearB = Number.parseInt(b.year) || 0
+          return yearB - yearA // Most recent first
+        })
+      : [],
     availability: {
       days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",

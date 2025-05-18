@@ -85,31 +85,52 @@ export default function ProfilePage() {
   // Update profile with user data when available
   useEffect(() => {
     if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
-        email: user.email || prev.email,
-        phone: user.phoneNumber || prev.phone,
-        location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
-        about: user.bio || prev.about,
-        linkedin: user.linkedin,
-        skills: user.skills || prev.skills,
-        experience: user.experience || prev.experience,
-        education: user.education || prev.education,
-        preferences: {
-          ...prev.preferences,
-          // Map the API industries values to industryFocus
-          industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
-          companySize: user.preferences?.companySize || prev.preferences.companySize,
-          recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
-          specializations: user.preferences?.specialization || prev.preferences.specializations,
-          // Map setupType directly from the API
-          setupType: user.preferences?.setupType || prev.preferences.setupType,
-          // Keep workStyle for backward compatibility
-          workStyle: user.preferences?.workStyle || prev.preferences.workStyle,
-          languages: user.languages || prev.preferences.languages,
-        },
-      }))
+      setProfile((prev) => {
+        // Sort experience by startDate (most recent first)
+        const sortedExperience = user.experience
+          ? [...user.experience].sort((a, b) => {
+              // Convert dates to comparable format (assuming MM/YYYY format)
+              const dateA = a.startDate ? new Date(a.startDate.split("/").reverse().join("/")) : new Date(0)
+              const dateB = b.startDate ? new Date(b.startDate.split("/").reverse().join("/")) : new Date(0)
+              return dateB.getTime() - dateA.getTime() // Most recent first
+            })
+          : prev.experience
+
+        // Sort education by year (most recent first)
+        const sortedEducation = user.education
+          ? [...user.education].sort((a, b) => {
+              const yearA = Number.parseInt(a.year) || 0
+              const yearB = Number.parseInt(b.year) || 0
+              return yearB - yearA // Most recent first
+            })
+          : prev.education
+
+        return {
+          ...prev,
+          name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
+          email: user.email || prev.email,
+          phone: user.phoneNumber || prev.phone,
+          location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
+          about: user.bio || prev.about,
+          linkedin: user.linkedin,
+          skills: user.skills || prev.skills,
+          experience: sortedExperience,
+          education: sortedEducation,
+          preferences: {
+            ...prev.preferences,
+            // Map the API industries values to industryFocus
+            industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
+            companySize: user.preferences?.companySize || prev.preferences.companySize,
+            recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
+            specializations: user.preferences?.specialization || prev.preferences.specializations,
+            // Map setupType directly from the API
+            setupType: user.preferences?.setupType || prev.preferences.setupType,
+            // Keep workStyle for backward compatibility
+            workStyle: user.preferences?.workStyle || prev.preferences.workStyle,
+            languages: user.languages || prev.preferences.languages,
+          },
+        }
+      })
     }
   }, [user])
 
