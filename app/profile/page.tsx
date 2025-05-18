@@ -379,6 +379,51 @@ export default function ProfilePage() {
     return dateStr.toLowerCase() === "present"
   }
 
+  // Handle removing an experience entry
+  const handleRemoveExperience = (index: number) => {
+    const newExperience = [...profile.experience]
+    newExperience.splice(index, 1)
+
+    // Ensure there's always at least one experience entry
+    if (newExperience.length === 0) {
+      newExperience.push({
+        title: "",
+        company: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+        location: "",
+      })
+    }
+
+    setProfile({ ...profile, experience: newExperience })
+    toast({
+      title: "Experience removed",
+      description: "The experience entry has been removed from your profile.",
+    })
+  }
+
+  // Handle removing an education entry
+  const handleRemoveEducation = (index: number) => {
+    const newEducation = [...profile.education]
+    newEducation.splice(index, 1)
+
+    // Ensure there's always at least one education entry
+    if (newEducation.length === 0) {
+      newEducation.push({
+        degree: "",
+        institution: "",
+        year: "",
+      })
+    }
+
+    setProfile({ ...profile, education: newEducation })
+    toast({
+      title: "Education removed",
+      description: "The education entry has been removed from your profile.",
+    })
+  }
+
   return (
     <div className="container mx-auto py-6 max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -707,6 +752,17 @@ export default function ProfilePage() {
                                 }}
                               />
                             </div>
+                            <div className="flex justify-end mt-4">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleRemoveExperience(index)}
+                                disabled={profile.experience.length <= 1}
+                                className="text-xs"
+                              >
+                                Remove Experience
+                              </Button>
+                            </div>
                             {index < profile.experience.length - 1 && <Separator className="my-4" />}
                           </div>
                         ) : (
@@ -800,6 +856,17 @@ export default function ProfilePage() {
                                   placeholder="Select graduation year"
                                 />
                               </div>
+                            </div>
+                            <div className="flex justify-end mt-4">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleRemoveEducation(index)}
+                                disabled={profile.education.length <= 1}
+                                className="text-xs"
+                              >
+                                Remove Education
+                              </Button>
                             </div>
                             {index < profile.education.length - 1 && <Separator className="my-4" />}
                           </div>
