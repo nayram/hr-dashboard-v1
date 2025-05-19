@@ -225,7 +225,7 @@ export default function ProfilePage() {
       return
     }
 
-    const profileLink = `${window.location.origin}/profile/${user.username}`
+    const profileLink = `${window.location.origin}/view/${user.username}`
     navigator.clipboard.writeText(profileLink)
     toast({
       title: "Link copied!",
@@ -240,6 +240,9 @@ export default function ProfilePage() {
       setShowUsernameModal(true)
       return
     }
+
+    // If they do have a username, open the public profile
+    window.open(`/view/${user.username}`, "_blank")
   }
 
   const handleUsernameCreated = (username: string) => {
@@ -247,14 +250,14 @@ export default function ProfilePage() {
 
     // Handle the action based on the redirect path
     if (usernameRedirectPath === "copy") {
-      const profileLink = `${window.location.origin}/profile/${username}`
+      const profileLink = `${window.location.origin}/view/${username}`
       navigator.clipboard.writeText(profileLink)
       toast({
         title: "Link copied!",
         description: "Profile link has been copied to clipboard",
       })
     } else if (usernameRedirectPath === "view") {
-      window.open(`/profile/${username}`, "_blank")
+      window.open(`/view/${username}`, "_blank")
     }
 
     setUsernameRedirectPath(undefined)
@@ -597,7 +600,7 @@ export default function ProfilePage() {
             Copy Profile Link
           </Button>
           {user?.username ? (
-            <Link href={`/profile/${user.username}`} target="_blank">
+            <Link href={`/view/${user.username}`} target="_blank">
               <Button variant="outline">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Public Profile

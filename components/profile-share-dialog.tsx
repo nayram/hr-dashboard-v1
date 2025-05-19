@@ -25,8 +25,8 @@ export function ProfileShareDialog({ profileName, username }: ProfileShareDialog
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
 
-  const profileUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/profile/${username}` : `/profile/${username}`
+  // Update to use the new /view route instead of /profile
+  const profileUrl = typeof window !== "undefined" ? `${window.location.origin}/view/${username}` : `/view/${username}`
 
   const handleCopy = () => {
     navigator.clipboard.writeText(profileUrl)
