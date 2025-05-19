@@ -37,7 +37,7 @@ const specializationLabels: Record<string, string> = {
   "De&I": "Diversity, Equity & Inclusion (DE&I)",
   "HR Ops": "HR Operations & Administration",
   "HR Performance": "Performance Management & Team Development",
-  "Compensation & Benefit": "Compensation & Benefits Programs",
+  "Compensation & Benefits": "Compensation & Benefits Programs",
   "Handle people ops & HR admin": "Handle people ops & HR admin",
   "Help teams perform better": "Help teams perform better",
 }
