@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
-import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop"
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
 import {
   Dialog,
@@ -48,10 +48,14 @@ export function ImageCropModal({ isOpen, onClose, imageSrc, onCropComplete, aspe
   const [rotate, setRotate] = useState(0)
   const imgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [imgWidth, setImgWidth] = useState(0)
+  const [imgHeight, setImgHeight] = useState(0)
 
   // When the image loads, set up the initial crop
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget
+    setImgWidth(width)
+    setImgHeight(height)
     setCrop(centerAspectCrop(width, height, aspectRatio))
   }
 
@@ -79,38 +83,27 @@ export function ImageCropModal({ isOpen, onClose, imageSrc, onCropComplete, aspe
       return
     }
 
-    // Calculate the size of the crop in pixels
-    const scaleX = image.naturalWidth / image.width
-    const scaleY = image.naturalHeight / image.height
-    const pixelRatio = window.devicePixelRatio || 1
+    // Convert crop from percentage to pixel values
+    const pixelCrop = convertToPixelCrop(completedCrop, image.naturalWidth, image.naturalHeight)
 
-    canvas.width = completedCrop.width * scaleX * pixelRatio
-    canvas.height = completedCrop.height * scaleY * pixelRatio
+    // Set canvas size to the cropped area size
+    const targetWidth = pixelCrop.width
+    const targetHeight = pixelCrop.height
 
-    ctx.scale(pixelRatio, pixelRatio)
-    ctx.imageSmoothingQuality = "high"
+    // Set canvas dimensions to match the cropped area
+    canvas.width = targetWidth
+    canvas.height = targetHeight
 
-    // Calculate the position and dimensions for drawing
-    const cropX = completedCrop.x * scaleX
-    const cropY = completedCrop.y * scaleY
-    const cropWidth = completedCrop.width * scaleX
-    const cropHeight = completedCrop.height * scaleY
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Set the origin to the center of the canvas for rotation
-    const centerX = canvas.width / (2 * pixelRatio)
-    const centerY = canvas.height / (2 * pixelRatio)
-
-    // Apply transformations
+    // Save the current context state
     ctx.save()
-    ctx.translate(centerX, centerY)
-    ctx.rotate((rotate * Math.PI) / 180)
-    ctx.scale(scale, scale)
-    ctx.translate(-centerX, -centerY)
 
-    // Draw the image with the crop
-    ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, completedCrop.width, completedCrop.height)
+    // Draw only the cropped portion of the image
+    ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, targetWidth, targetHeight)
 
-    // Restore the context
+    // Restore the context state
     ctx.restore()
 
     // Convert the canvas to a blob and pass it to the parent component

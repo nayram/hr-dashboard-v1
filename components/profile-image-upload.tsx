@@ -82,6 +82,10 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       const contentType = "image/jpeg" // We're converting to JPEG in the crop function
       const croppedFile = new File([croppedImageBlob], fileName, { type: contentType })
 
+      // Create a temporary URL for the cropped image to display while uploading
+      const croppedImageUrl = URL.createObjectURL(croppedImageBlob)
+      setImage(croppedImageUrl)
+
       // Get file extension from file name
       const fileExtension = "jpg" // Always jpg since we're converting to JPEG
 
@@ -101,6 +105,9 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
 
       // Update the user context with the updated user data
       updateUser(updatedUser)
+
+      // Clean up the temporary cropped image URL
+      URL.revokeObjectURL(croppedImageUrl)
 
       toast({
         title: "Image uploaded",
