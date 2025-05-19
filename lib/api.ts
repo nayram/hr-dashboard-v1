@@ -8,6 +8,8 @@ export const API_ENDPOINTS = {
   USER: `${API_BASE_URL}/users/me`,
   SET_USERNAME: `${API_BASE_URL}/users/username`,
   GET_USER_BY_USERNAME: `${API_BASE_URL}/users/username/`,
+  PROFILE_PICTURE_UPLOAD_URL: `${API_BASE_URL}/profile-pictures/upload-url`,
+  PROFILE_PICTURE_CONFIRM: `${API_BASE_URL}/profile-pictures/confirm`,
 }
 
 // Track if verification is in progress
@@ -146,5 +148,70 @@ export async function updateUserProfile(token: string, profileData: any): Promis
   }
 
   console.log("Profile updated successfully:", data)
+  return data
+}
+
+// Get a signed URL for profile picture upload
+export async function getProfilePictureUploadUrl(
+  token: string,
+  contentType: string,
+  fileExtension: string,
+): Promise<{ signedUrl: string; filePath: string; publicUrl: string }> {
+  const response = await fetch(API_ENDPOINTS.PROFILE_PICTURE_UPLOAD_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      contentType,
+      fileExtension,
+    }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to get upload URL")
+  }
+
+  return data
+}
+
+// Upload profile picture to the signed URL
+export async function uploadProfilePicture(signedUrl: string, file: File, contentType: string): Promise<void> {
+  const response = await fetch(signedUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+    },
+    body: file,
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to upload profile picture")
+  }
+}
+
+// Confirm profile picture upload
+export async function confirmProfilePictureUpload(token: string, filePath: string, contentType: string): Promise<any> {
+  const response = await fetch(API_ENDPOINTS.PROFILE_PICTURE_CONFIRM, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      filePath,
+      contentType,
+    }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to confirm profile picture upload")
+  }
+
   return data
 }

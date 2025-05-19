@@ -5,8 +5,10 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Camera, X, Upload } from "lucide-react"
+import { Camera, X, Upload, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/contexts/auth-context"
+import { getProfilePictureUploadUrl, uploadProfilePicture, confirmProfilePictureUpload } from "@/lib/api"
 
 interface ProfileImageUploadProps {
   initialImage?: string | null
@@ -18,12 +20,14 @@ interface ProfileImageUploadProps {
 export function ProfileImageUpload({ initialImage, name, onImageChange, className = "" }: ProfileImageUploadProps) {
   const [image, setImage] = useState<string | null>(initialImage || null)
   const [isHovering, setIsHovering] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const { token, updateUser } = useAuth()
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file || !token) return
 
     // Validate file type
     if (!file.type.match(/image\/(jpeg|jpg|png|gif|webp)/i)) {
@@ -45,34 +49,86 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      const imageUrl = event.target?.result as string
-      setImage(imageUrl)
-      onImageChange(imageUrl)
+    try {
+      setIsUploading(true)
+
+      // Get file extension from file name
+      const fileExtension = file.name.split(".").pop() || "png"
+
+      // Step 1: Get a signed URL for upload
+      const { signedUrl, filePath, publicUrl } = await getProfilePictureUploadUrl(token, file.type, fileExtension)
+
+      // Step 2: Upload the file to the signed URL
+      await uploadProfilePicture(signedUrl, file, file.type)
+
+      // Step 3: Confirm the upload
+      const updatedUser = await confirmProfilePictureUpload(token, filePath, file.type)
+
+      // Update the image in the component state
+      const profilePictureUrl = updatedUser.profilePicture?.publicUrl || publicUrl
+      setImage(profilePictureUrl)
+      onImageChange(profilePictureUrl)
+
+      // Update the user context with the updated user data
+      updateUser(updatedUser)
+
       toast({
         title: "Image uploaded",
         description: "Your profile picture has been updated",
       })
+    } catch (error) {
+      console.error("Failed to upload profile picture:", error)
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Failed to upload profile picture",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
     }
-    reader.readAsDataURL(file)
   }
 
-  const handleRemoveImage = () => {
-    setImage(null)
-    onImageChange(null)
-    // Reset the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+  const handleRemoveImage = async () => {
+    if (!token) return
+
+    try {
+      setIsUploading(true)
+
+      // Update the profile with null profile picture
+      const updatedUser = await confirmProfilePictureUpload(token, "", "")
+
+      // Update the image in the component state
+      setImage(null)
+      onImageChange(null)
+
+      // Update the user context with the updated user data
+      updateUser(updatedUser)
+
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+
+      toast({
+        title: "Image removed",
+        description: "Your profile picture has been removed",
+      })
+    } catch (error) {
+      console.error("Failed to remove profile picture:", error)
+      toast({
+        title: "Remove failed",
+        description: error instanceof Error ? error.message : "Failed to remove profile picture",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploading(false)
     }
-    toast({
-      title: "Image removed",
-      description: "Your profile picture has been removed",
-    })
   }
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click()
+    if (!isUploading) {
+      fileInputRef.current?.click()
+    }
   }
 
   // Generate initials from name
@@ -84,7 +140,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
   return (
     <div className={`relative ${className}`}>
       <div
-        className="relative cursor-pointer group"
+        className={`relative cursor-pointer group ${isUploading ? "opacity-70" : ""}`}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onClick={triggerFileInput}
@@ -94,16 +150,22 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
           <AvatarFallback className="bg-primary/10 text-primary text-xl">{initials}</AvatarFallback>
         </Avatar>
 
-        <div
-          className={`absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-opacity ${
-            isHovering ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <Camera className="h-6 w-6 text-white" />
-        </div>
+        {isUploading ? (
+          <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+            <Loader2 className="h-6 w-6 text-white animate-spin" />
+          </div>
+        ) : (
+          <div
+            className={`absolute inset-0 bg-black/50 rounded-full flex items-center justify-center transition-opacity ${
+              isHovering ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <Camera className="h-6 w-6 text-white" />
+          </div>
+        )}
       </div>
 
-      {image && (
+      {image && !isUploading && (
         <Button
           variant="outline"
           size="icon"
@@ -125,6 +187,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
         accept="image/jpeg,image/png,image/gif,image/webp"
         className="hidden"
         aria-label="Upload profile picture"
+        disabled={isUploading}
       />
 
       <div className="mt-2 flex justify-center">
@@ -133,9 +196,19 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
           size="sm"
           className="text-xs flex items-center gap-1 text-muted-foreground"
           onClick={triggerFileInput}
+          disabled={isUploading}
         >
-          <Upload className="h-3 w-3" />
-          {image ? "Change photo" : "Upload photo"}
+          {isUploading ? (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="h-3 w-3" />
+              {image ? "Change photo" : "Upload photo"}
+            </>
+          )}
         </Button>
       </div>
     </div>

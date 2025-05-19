@@ -47,6 +47,7 @@ export default function ProfilePage() {
   const [endTime, setEndTime] = useState<string>("17:00")
   const [timezone, setTimezone] = useState<string>("Europe/Paris")
 
+  // Update the profile state initialization to include profileImage
   const [profile, setProfile] = useState({
     name: "",
     title: "HR Professional",
@@ -129,7 +130,7 @@ export default function ProfilePage() {
     })
   }
 
-  // Update profile with user data when available
+  // Update the useEffect that loads user data to handle the new profilePicture structure
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
@@ -145,6 +146,9 @@ export default function ProfilePage() {
             })
           : prev.education
 
+        // Get profile picture URL from the new structure
+        const profileImageUrl = user.profilePicture?.publicUrl || null
+
         return {
           ...prev,
           name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
@@ -154,7 +158,7 @@ export default function ProfilePage() {
           about: user.bio || prev.about,
           linkedin: user.linkedin,
           twitter: user.twitter,
-          profileImage: user.profileImage || prev.profileImage,
+          profileImage: profileImageUrl,
           skills: user.skills || prev.skills,
           experience: sortedExperience,
           education: sortedEducation,
@@ -270,7 +274,8 @@ export default function ProfilePage() {
     }))
   }
 
-  // Prepare profile data for API submission
+  // Update the prepareProfileData function to not include profileImage
+  // (since it's now handled separately through the profile picture upload API)
   const prepareProfileData = () => {
     // Split name into first and last name
     const nameParts = profile.name.split(" ")
