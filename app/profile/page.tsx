@@ -20,15 +20,17 @@ import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { LogoutButton } from "@/components/logout-button"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
-import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin } from "lucide-react"
+import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2 } from "lucide-react"
 import { MonthYearPicker } from "@/components/month-year-picker"
 import { YearPicker } from "@/components/year-picker"
 import { format } from "date-fns"
+import { updateUserProfile } from "@/lib/api"
 
 export default function ProfilePage() {
   const { toast } = useToast()
-  const { user, logout } = useAuth()
+  const { user, token, updateUser } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showUsernameModal, setShowUsernameModal] = useState(false)
   const [usernameRedirectPath, setUsernameRedirectPath] = useState<string | undefined>()
@@ -151,6 +153,8 @@ export default function ProfilePage() {
           location: user.location?.city ? `${user.location.city}, ${user.location.country}` : prev.location,
           about: user.bio || prev.about,
           linkedin: user.linkedin,
+          twitter: user.twitter,
+          profileImage: user.profileImage || prev.profileImage,
           skills: user.skills || prev.skills,
           experience: sortedExperience,
           education: sortedEducation,
@@ -263,7 +267,69 @@ export default function ProfilePage() {
     }))
   }
 
-  const handleSaveProfile = () => {
+  // Prepare profile data for API submission
+  const prepareProfileData = () => {
+    // Split name into first and last name
+    const nameParts = profile.name.split(" ")
+    const firstName = nameParts[0] || ""
+    const lastName = nameParts.slice(1).join(" ") || ""
+
+    // Parse location into city and country
+    let city = ""
+    let country = ""
+    if (profile.location) {
+      const locationParts = profile.location.split(",")
+      city = locationParts[0]?.trim() || ""
+      country = locationParts[1]?.trim() || ""
+    }
+
+    // Map preferences to API format
+    const preferences = {
+      industries: profile.preferences.industryFocus,
+      companySize: profile.preferences.companySize,
+      recruitmentRoles: profile.preferences.recruitmentFocus,
+      specialization: profile.preferences.specializations,
+      setupType: profile.preferences.setupType,
+      workStyle: profile.preferences.setupType, // For backward compatibility
+    }
+
+    // Get selected days as an array of capitalized day names
+    const selectedDays = Object.entries(availability)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+
+    // Prepare availability data
+    const availabilityData = {
+      days: selectedDays,
+      startTime,
+      endTime,
+      timeZone: timezone,
+    }
+
+    // Prepare the final data object
+    return {
+      name: firstName,
+      lastName,
+      phoneNumber: profile.phone,
+      bio: profile.about,
+      title: profile.title,
+      linkedin: profile.linkedin,
+      twitter: profile.twitter,
+      profileImage: profile.profileImage,
+      skills: profile.skills,
+      experience: profile.experience,
+      education: profile.education,
+      preferences,
+      availability: availabilityData,
+      location: {
+        city,
+        country,
+      },
+      languages: profile.preferences.languages,
+    }
+  }
+
+  const handleSaveProfile = async () => {
     // Check for date validation errors in all experiences
     const hasDateErrors = profile.experience.some((exp) => exp.dateError)
 
@@ -283,11 +349,42 @@ export default function ProfilePage() {
       experience: sortedExperiences,
     })
 
-    setIsEditing(false)
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been successfully updated",
-    })
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save your profile",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSaving(true)
+
+    try {
+      // Prepare the data for the API
+      const profileData = prepareProfileData()
+
+      // Send the data to the API
+      const updatedUser = await updateUserProfile(token, profileData)
+
+      // Update the user context with the new data
+      updateUser(updatedUser)
+
+      setIsEditing(false)
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully saved",
+      })
+    } catch (error) {
+      console.error("Failed to save profile:", error)
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save profile. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleUpdatePreferences = (preferences: HRPreferencesData) => {
@@ -304,26 +401,52 @@ export default function ProfilePage() {
     }))
   }
 
-  const handleSaveAvailability = () => {
-    // Get selected days as an array of capitalized day names
-    const selectedDays = Object.entries(availability)
-      .filter(([_, isSelected]) => isSelected)
-      .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
-
-    // Prepare availability data
-    const availabilityData = {
-      days: selectedDays,
-      startTime,
-      endTime,
-      timeZone: timezone, // Note: using timeZone to match the API field name
+  const handleSaveAvailability = async () => {
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save your availability",
+        variant: "destructive",
+      })
+      return
     }
 
-    // Here you would typically send this data to your API
-    // For now, just show a success toast
-    toast({
-      title: "Availability saved",
-      description: "Your availability settings have been updated.",
-    })
+    setIsSaving(true)
+
+    try {
+      // Get selected days as an array of capitalized day names
+      const selectedDays = Object.entries(availability)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+
+      // Prepare availability data
+      const availabilityData = {
+        days: selectedDays,
+        startTime,
+        endTime,
+        timeZone: timezone,
+      }
+
+      // Send only the availability data to the API
+      const updatedUser = await updateUserProfile(token, { availability: availabilityData })
+
+      // Update the user context with the new data
+      updateUser(updatedUser)
+
+      toast({
+        title: "Availability saved",
+        description: "Your availability settings have been updated.",
+      })
+    } catch (error) {
+      console.error("Failed to save availability:", error)
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save availability. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // Handle start date change
@@ -602,7 +725,7 @@ export default function ProfilePage() {
                       <Label htmlFor="linkedin">LinkedIn</Label>
                       <Input
                         id="linkedin"
-                        value={profile.linkedin || "LinkedIn"}
+                        value={profile.linkedin || ""}
                         onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
                       />
                     </div>
@@ -948,10 +1071,19 @@ export default function ProfilePage() {
 
               {isEditing && (
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveProfile}>Save Profile</Button>
+                  <Button onClick={handleSaveProfile} disabled={isSaving}>
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Profile"
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -1054,8 +1186,15 @@ export default function ProfilePage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="ml-auto" onClick={handleSaveAvailability}>
-                Save Availability
+              <Button className="ml-auto" onClick={handleSaveAvailability} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Availability"
+                )}
               </Button>
             </CardFooter>
           </Card>
