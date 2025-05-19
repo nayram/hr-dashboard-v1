@@ -1,5 +1,5 @@
-// Base API URL
-const API_BASE_URL = "https://hr-service-api-983304911235.europe-west4.run.app/api"
+// Base API URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // API endpoints
 export const API_ENDPOINTS = {

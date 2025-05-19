@@ -123,7 +123,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     about: profile.bio || "No bio provided",
     linkedin: profile.linkedin || "",
     twitter: profile.twitter || "",
-    profileImage: profile.profileImage || null,
+    profileImage: profile.profilePicture?.publicUrl || null,
     skills: profile.skills || [],
     // Sort experience by startDate (most recent first)
     experience: profile.experience
