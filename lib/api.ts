@@ -127,6 +127,8 @@ export async function getUserByUsername(username: string): Promise<any> {
 
 // Update user profile
 export async function updateUserProfile(token: string, profileData: any): Promise<any> {
+  console.log("Updating profile with data:", JSON.stringify(profileData, null, 2))
+
   const response = await fetch(API_ENDPOINTS.USER, {
     method: "PUT",
     headers: {
@@ -139,8 +141,10 @@ export async function updateUserProfile(token: string, profileData: any): Promis
   const data = await response.json()
 
   if (!response.ok) {
+    console.error("API error response:", data)
     throw new Error(data.message || "Failed to update profile")
   }
 
+  console.log("Profile updated successfully:", data)
   return data
 }

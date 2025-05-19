@@ -286,49 +286,62 @@ export default function ProfilePage() {
       country = locationParts[1]?.trim() || ""
     }
 
-    // Map preferences to API format
-    const preferences = {
-      industries: profile.preferences.industryFocus,
-      companySize: profile.preferences.companySize,
-      recruitmentRoles: profile.preferences.recruitmentFocus,
-      specialization: profile.preferences.specializations,
-      setupType: profile.preferences.setupType,
-      workStyle: profile.preferences.setupType, // For backward compatibility
-    }
-
-    // Get selected days as an array of capitalized day names
+    // Format availability data
     const selectedDays = Object.entries(availability)
       .filter(([_, isSelected]) => isSelected)
-      .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+      .map(([day]) => day.toLowerCase())
 
-    // Prepare availability data
-    const availabilityData = {
-      days: selectedDays,
-      startTime,
-      endTime,
-      timeZone: timezone,
-    }
-
-    // Prepare the final data object
+    // Prepare the final data object according to the API schema
     return {
       name: firstName,
       lastName,
       phoneNumber: profile.phone,
-      bio: profile.about,
+      bio: profile.about || "\n", // Ensure bio is never empty
       title: profile.title,
-      linkedin: profile.linkedin,
-      twitter: profile.twitter,
-      profileImage: profile.profileImage,
-      skills: profile.skills,
-      experience: profile.experience,
-      education: profile.education,
-      preferences,
-      availability: availabilityData,
-      location: {
-        city,
-        country,
+      linkedin: profile.linkedin || "",
+      email: profile.email,
+      address: "", // Not used in our UI but required by API
+      availability: {
+        days: selectedDays,
+        startTime: startTime, // Use 24-hour format directly
+        endTime: endTime, // Use 24-hour format directly
+        timeZone: timezone,
       },
-      languages: profile.preferences.languages,
+      location: {
+        country: country || "Unknown",
+        city: city || "Unknown",
+        type: profile.preferences.setupType || "Remote",
+      },
+      setupType: profile.preferences.setupType || "Remote",
+      languages: profile.preferences.languages || [],
+      monthlyBudget: 0, // Default values for required fields
+      hourlyBudget: 0,
+      yearsOfExperience: 0,
+      preferences: {
+        companySize: profile.preferences.companySize || [],
+        industries: profile.preferences.industryFocus || [],
+        recruitmentRoles: profile.preferences.recruitmentFocus || [],
+        projectLifeSpan: ["Long-term projects (more than 2 months)"], // Default value
+        specialization: profile.preferences.specializations || [],
+      },
+      cv: [],
+      experience: profile.experience.map((exp) => ({
+        title: exp.title || "",
+        company: exp.company || "",
+        startDate: exp.startDate || "",
+        endDate: exp.endDate || "",
+        description: exp.description || "",
+        location: exp.location || "",
+      })),
+      education: profile.education.map((edu) => ({
+        degree: edu.degree || "",
+        institution: edu.institution || "",
+        year: edu.year || "",
+      })),
+      skills: profile.skills || [],
+      payment: {
+        organizationType: "As a freelance", // Default value
+      },
     }
   }
 
@@ -364,7 +377,7 @@ export default function ProfilePage() {
     setIsSaving(true)
 
     try {
-      // Prepare the data for the API
+      // Prepare the data for the API according to the required schema
       const profileData = prepareProfileData()
 
       // Send the data to the API
@@ -417,21 +430,23 @@ export default function ProfilePage() {
     setIsSaving(true)
 
     try {
-      // Get selected days as an array of capitalized day names
+      // Get selected days as an array of lowercase day names
       const selectedDays = Object.entries(availability)
         .filter(([_, isSelected]) => isSelected)
-        .map(([day]) => day.charAt(0).toUpperCase() + day.slice(1))
+        .map(([day]) => day.toLowerCase())
 
-      // Prepare availability data
+      // Prepare availability data according to the API schema
       const availabilityData = {
-        days: selectedDays,
-        startTime,
-        endTime,
-        timeZone: timezone,
+        availability: {
+          days: selectedDays,
+          startTime: startTime, // Use 24-hour format directly
+          endTime: endTime, // Use 24-hour format directly
+          timeZone: timezone,
+        },
       }
 
       // Send only the availability data to the API
-      const updatedUser = await updateUserProfile(token, { availability: availabilityData })
+      const updatedUser = await updateUserProfile(token, availabilityData)
 
       // Update the user context with the new data
       updateUser(updatedUser)

@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/contexts/auth-context"
+import { updateUserProfile } from "@/lib/api"
+import { Loader2 } from "lucide-react"
 
 // Update the HRPreferencesData interface to match the API structure
 export interface HRPreferencesData {
@@ -35,6 +38,8 @@ const specializationLabels: Record<string, string> = {
   "HR Ops": "HR Operations & Administration",
   "HR Performance": "Performance Management & Team Development",
   "Compensation & Benefit": "Compensation & Benefits Programs",
+  "Handle people ops & HR admin": "Handle people ops & HR admin",
+  "Help teams perform better": "Help teams perform better",
 }
 
 // Industry focus options from the API
@@ -54,6 +59,8 @@ const industryOptions = [
 
 export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPreferencesProps) {
   const { toast } = useToast()
+  const { token, updateUser } = useAuth()
+  const [isSaving, setIsSaving] = useState(false)
   const [currentPreferences, setCurrentPreferences] = useState<HRPreferencesData>({
     ...preferences,
     // Initialize setupType from the API value, fall back to workStyle for backward compatibility
@@ -74,19 +81,59 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
     setCurrentPreferences(updated)
   }
 
-  const handleSave = () => {
-    // When saving, ensure both setupType and workStyle are updated
-    // This maintains backward compatibility while using the new field
-    const updatedPreferences = {
-      ...currentPreferences,
-      // Ensure workStyle is also updated for backward compatibility
-      workStyle: currentPreferences.setupType,
+  const handleSave = async () => {
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to save your preferences",
+        variant: "destructive",
+      })
+      return
     }
-    onUpdate(updatedPreferences)
-    toast({
-      title: "Preferences saved",
-      description: "Your HR preferences have been updated.",
-    })
+
+    setIsSaving(true)
+
+    try {
+      // Format preferences according to the API schema
+      const preferencesData = {
+        preferences: {
+          industries: currentPreferences.industryFocus,
+          companySize: currentPreferences.companySize,
+          recruitmentRoles: currentPreferences.recruitmentFocus,
+          specialization: currentPreferences.specializations,
+          projectLifeSpan: ["Long-term projects (more than 2 months)"], // Default value
+        },
+        languages: currentPreferences.languages,
+        setupType: currentPreferences.setupType,
+      }
+
+      // Send the preferences data to the API
+      const updatedUser = await updateUserProfile(token, preferencesData)
+
+      // Update the user context with the new data
+      updateUser(updatedUser)
+
+      // Update the parent component's state
+      onUpdate({
+        ...currentPreferences,
+        // Ensure workStyle is also updated for backward compatibility
+        workStyle: currentPreferences.setupType,
+      })
+
+      toast({
+        title: "Preferences saved",
+        description: "Your HR preferences have been updated.",
+      })
+    } catch (error) {
+      console.error("Failed to save preferences:", error)
+      toast({
+        title: "Save Failed",
+        description: error instanceof Error ? error.message : "Failed to save preferences. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleIndustryChange = (industry: string) => {
@@ -336,6 +383,8 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
                   <SelectItem value="Large Corporations (250+ employees)">
                     Large Corporations (250+ employees)
                   </SelectItem>
+                  <SelectItem value="SMEs">SMEs</SelectItem>
+                  <SelectItem value="Startups / Scaleups">Startups / Scaleups</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -359,6 +408,7 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
               <SelectItem value="Remote">Remote</SelectItem>
               <SelectItem value="Hybrid">Hybrid</SelectItem>
               <SelectItem value="Onsite">Onsite</SelectItem>
+              <SelectItem value="Open to hybrid projects">Open to hybrid projects</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -416,7 +466,16 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
 
         {!readOnly && (
           <div className="flex justify-end mt-6">
-            <Button onClick={handleSave}>Save All Preferences</Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save All Preferences"
+              )}
+            </Button>
           </div>
         )}
       </CardContent>
