@@ -362,26 +362,8 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
                   <SelectValue placeholder="Select company size" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Early Stage Startups">Early Stage Startups</SelectItem>
-                  <SelectItem value="Startups / Scale ups">Startups / Scale ups</SelectItem>
-                  <SelectItem value="Seed Startups (1-10 employees)">Seed Startups (1-10 employees)</SelectItem>
-                  <SelectItem value="Series A-B Startups (10-100 employees)">
-                    Series A-B Startups (10-100 employees)
-                  </SelectItem>
-                  <SelectItem value="Series C-D Startups (50-500 employees)">
-                    Series C-D Startups (50-500 employees)
-                  </SelectItem>
-                  <SelectItem value="Scale-ups +500 employees">Scale-ups +500 employees</SelectItem>
-                  <SelectItem value="Small Businesses (1-50 employees)">Small Businesses (1-50 employees)</SelectItem>
-                  <SelectItem value="Medium Businesses (50-500 employees)">
-                    Medium Businesses (50-500 employees)
-                  </SelectItem>
-                  <SelectItem value="Medium Businesses (50-250 employees)">
-                    Medium Businesses (50-250 employees)
-                  </SelectItem>
-                  <SelectItem value="Large Companies (+500 employees)">Large Companies (+500 employees)</SelectItem>
-                  <SelectItem value="Large Corporations (250+ employees)">
-                    Large Corporations (250+ employees)
+                  <SelectItem value="Corporates">
+                    Corporates
                   </SelectItem>
                   <SelectItem value="SMEs">SMEs</SelectItem>
                   <SelectItem value="Startups / Scaleups">Startups / Scaleups</SelectItem>
@@ -408,7 +390,6 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
               <SelectItem value="Remote">Remote</SelectItem>
               <SelectItem value="Hybrid">Hybrid</SelectItem>
               <SelectItem value="Onsite">Onsite</SelectItem>
-              <SelectItem value="Open to hybrid projects">Open to hybrid projects</SelectItem>
             </SelectContent>
           </Select>
         </div>
