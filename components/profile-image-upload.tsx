@@ -9,6 +9,7 @@ import { Camera, X, Upload, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import { getProfilePictureUploadUrl, uploadProfilePicture, confirmProfilePictureUpload } from "@/lib/api"
+import { ImageCropModal } from "@/components/image-crop-modal"
 
 interface ProfileImageUploadProps {
   initialImage?: string | null
@@ -21,13 +22,17 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
   const [image, setImage] = useState<string | null>(initialImage || null)
   const [isHovering, setIsHovering] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [cropModalOpen, setCropModalOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [tempImageUrl, setTempImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
   const { token, updateUser } = useAuth()
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !token) return
+    if (!file) return
 
     // Validate file type
     if (!file.type.match(/image\/(jpeg|jpg|png|gif|webp)/i)) {
@@ -49,20 +54,45 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       return
     }
 
+    // Create a temporary URL for the image to display in the crop modal
+    const imageUrl = URL.createObjectURL(file)
+    setTempImageUrl(imageUrl)
+    setSelectedFile(file)
+    setCropModalOpen(true)
+  }
+
+  // Handle crop completion
+  const handleCropComplete = async (croppedImageBlob: Blob) => {
+    setCropModalOpen(false)
+
+    if (!token) {
+      toast({
+        title: "Authentication error",
+        description: "You must be logged in to upload a profile picture",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       setIsUploading(true)
 
+      // Convert the cropped blob to a file
+      const fileName = selectedFile?.name || "profile-picture.jpg"
+      const contentType = "image/jpeg" // We're converting to JPEG in the crop function
+      const croppedFile = new File([croppedImageBlob], fileName, { type: contentType })
+
       // Get file extension from file name
-      const fileExtension = file.name.split(".").pop() || "png"
+      const fileExtension = "jpg" // Always jpg since we're converting to JPEG
 
       // Step 1: Get a signed URL for upload
-      const { signedUrl, filePath, publicUrl } = await getProfilePictureUploadUrl(token, file.type, fileExtension)
+      const { signedUrl, filePath, publicUrl } = await getProfilePictureUploadUrl(token, contentType, fileExtension)
 
       // Step 2: Upload the file to the signed URL
-      await uploadProfilePicture(signedUrl, file, file.type)
+      await uploadProfilePicture(signedUrl, croppedFile, contentType)
 
       // Step 3: Confirm the upload
-      const updatedUser = await confirmProfilePictureUpload(token, filePath, file.type)
+      const updatedUser = await confirmProfilePictureUpload(token, filePath, contentType)
 
       // Update the image in the component state
       const profilePictureUrl = updatedUser.profilePicture?.publicUrl || publicUrl
@@ -85,6 +115,11 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       })
     } finally {
       setIsUploading(false)
+      // Clean up the temporary URL
+      if (tempImageUrl) {
+        URL.revokeObjectURL(tempImageUrl)
+        setTempImageUrl(null)
+      }
     }
   }
 
@@ -183,7 +218,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleImageChange}
+        onChange={handleFileSelect}
         accept="image/jpeg,image/png,image/gif,image/webp"
         className="hidden"
         aria-label="Upload profile picture"
@@ -211,6 +246,23 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
           )}
         </Button>
       </div>
+
+      {/* Image Crop Modal */}
+      {tempImageUrl && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          onClose={() => {
+            setCropModalOpen(false)
+            if (tempImageUrl) {
+              URL.revokeObjectURL(tempImageUrl)
+              setTempImageUrl(null)
+            }
+          }}
+          imageSrc={tempImageUrl}
+          onCropComplete={handleCropComplete}
+          aspectRatio={1} // 1:1 aspect ratio for profile pictures
+        />
+      )}
     </div>
   )
 }
