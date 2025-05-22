@@ -360,19 +360,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                       </a>
                     </div>
                   )}
-                  {formattedProfile.twitter && (
-                    <div className="flex items-center gap-2">
-                      <Twitter className="h-4 w-4 text-gray-500" />
-                      <a
-                        href={`https://${formattedProfile.twitter}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        Twitter
-                      </a>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
 
