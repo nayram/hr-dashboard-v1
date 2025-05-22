@@ -18,7 +18,6 @@ import Link from "next/link"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
-import { LogoutButton } from "@/components/logout-button"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
 import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2 } from "lucide-react"
 import { MonthYearPicker } from "@/components/month-year-picker"
@@ -627,7 +626,6 @@ export default function ProfilePage() {
               View Public Profile
             </Button>
           )}
-          <LogoutButton />
         </div>
       </div>
 
