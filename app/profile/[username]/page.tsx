@@ -128,9 +128,25 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     // Sort experience by startDate (most recent first)
     experience: profile.experience
       ? [...profile.experience].sort((a, b) => {
-          // Convert dates to comparable format (assuming MM/YYYY format)
-          const dateA = a.startDate ? new Date(a.startDate.split("/").reverse().join("/")) : new Date(0)
-          const dateB = b.startDate ? new Date(b.startDate.split("/").reverse().join("/")) : new Date(0)
+          // Handle "Present" for end date (should be considered as the most recent)
+          if (a.endDate === "Present" && b.endDate !== "Present") return -1
+          if (a.endDate !== "Present" && b.endDate === "Present") return 1
+
+          // Parse dates properly (MM/YYYY format)
+          const parseDate = (dateStr: string) => {
+            if (!dateStr) return new Date(0)
+            const parts = dateStr.split("/")
+            if (parts.length === 2) {
+              const month = Number.parseInt(parts[0], 10) - 1 // JS months are 0-indexed
+              const year = Number.parseInt(parts[1], 10)
+              return new Date(year, month, 1)
+            }
+            return new Date(0)
+          }
+
+          const dateA = parseDate(a.startDate)
+          const dateB = parseDate(b.startDate)
+
           return dateB.getTime() - dateA.getTime() // Most recent first
         })
       : [],

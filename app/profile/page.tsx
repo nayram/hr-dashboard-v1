@@ -134,7 +134,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
-        // Sort experience by startDate (most recent first)
+        // Sort experience by startDate (most recent first) only when loading from API
         const sortedExperience = user.experience ? sortExperiencesByDate(user.experience) : prev.experience
 
         // Sort education by year (most recent first)
@@ -363,12 +363,7 @@ export default function ProfilePage() {
       return
     }
 
-    // Sort experiences by date before saving
-    const sortedExperiences = sortExperiencesByDate(profile.experience)
-    setProfile({
-      ...profile,
-      experience: sortedExperiences,
-    })
+    // Don't sort experiences before saving - maintain the order as edited by the user
 
     if (!token) {
       toast({
@@ -607,8 +602,8 @@ export default function ProfilePage() {
     setProfile({ ...profile, experience: newExperience })
   }
 
-  // Get sorted experiences for display
-  const sortedExperiences = sortExperiencesByDate(profile.experience)
+  // Only sort experiences for display in read-only mode
+  const displayExperiences = isEditing ? profile.experience : sortExperiencesByDate(profile.experience)
 
   return (
     <div className="container mx-auto py-6 max-w-6xl">
@@ -848,7 +843,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {sortedExperiences.map((exp, index) => (
+                    {displayExperiences.map((exp, index) => (
                       <div key={index} className="space-y-2">
                         {isEditing ? (
                           <div className="space-y-4">
@@ -973,7 +968,7 @@ export default function ProfilePage() {
                                 Remove Experience
                               </Button>
                             </div>
-                            {index < sortedExperiences.length - 1 && <Separator className="my-4" />}
+                            {index < displayExperiences.length - 1 && <Separator className="my-4" />}
                           </div>
                         ) : (
                           <>
@@ -990,7 +985,7 @@ export default function ProfilePage() {
                               </span>
                             </div>
                             <p>{exp.description || "No description provided"}</p>
-                            {index < sortedExperiences.length - 1 && <Separator className="my-4" />}
+                            {index < displayExperiences.length - 1 && <Separator className="my-4" />}
                           </>
                         )}
                       </div>
