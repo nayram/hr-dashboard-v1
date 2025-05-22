@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Camera, X, Upload, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
-import { getProfilePictureUploadUrl, uploadProfilePicture, confirmProfilePictureUpload } from "@/lib/api"
+import {
+  getProfilePictureUploadUrl,
+  uploadProfilePicture,
+  confirmProfilePictureUpload,
+  deleteProfilePicture,
+} from "@/lib/api"
 import { ImageCropModal } from "@/components/image-crop-modal"
 
 interface ProfileImageUploadProps {
@@ -26,7 +31,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
   const [tempImageUrl, setTempImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
-  const { token, updateUser } = useAuth()
+  const { token, updateUser, user } = useAuth()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -128,15 +133,15 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
     try {
       setIsUploading(true)
 
-      // Update the profile with null profile picture
-      const updatedUser = await confirmProfilePictureUpload(token, "", "")
+      // Use the simplified DELETE endpoint to remove the profile picture
+      await deleteProfilePicture(token)
 
       // Update the image in the component state
       setImage(null)
       onImageChange(null)
 
       // Update the user context with the updated user data
-      updateUser(updatedUser)
+      updateUser({ ...user, profilePicture: null })
 
       // Reset the file input
       if (fileInputRef.current) {

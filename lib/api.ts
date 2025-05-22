@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
   GET_USER_BY_USERNAME: `${API_BASE_URL}/users/username/`,
   PROFILE_PICTURE_UPLOAD_URL: `${API_BASE_URL}/profile-pictures/upload-url`,
   PROFILE_PICTURE_CONFIRM: `${API_BASE_URL}/profile-pictures/confirm`,
+  PROFILE_PICTURE_DELETE: `${API_BASE_URL}/profile-pictures`,
 }
 
 // Track if verification is in progress
@@ -214,4 +215,22 @@ export async function confirmProfilePictureUpload(token: string, filePath: strin
   }
 
   return data
+}
+
+// Delete profile picture
+export async function deleteProfilePicture(token: string): Promise<void> {
+  const response = await fetch(API_ENDPOINTS.PROFILE_PICTURE_DELETE, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    // For 204 No Content, there's no JSON to parse
+    if (response.status !== 204) {
+      const error = await response.json().catch(() => ({ message: "Failed to delete profile picture" }))
+      throw new Error(error.message || "Failed to delete profile picture")
+    }
+  }
 }
