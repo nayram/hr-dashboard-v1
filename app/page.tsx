@@ -18,11 +18,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <main className="flex-1">
+      <main className="flex-1 flex items-center justify-center">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
+            <div className="flex flex-col items-center space-y-6 text-center">
+              <div className="space-y-3 max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
                   HR Profile Platform
                 </h1>
@@ -30,14 +30,14 @@ export default function Home() {
                   Showcase your HR expertise and manage your professional availability in one place.
                 </p>
               </div>
-              <div className="space-x-4">
+              <div className="flex justify-center pt-4">
                 {isAuthenticated ? (
                   <Link href="/profile">
-                    <Button>Go to My Profile</Button>
+                    <Button size="lg">Go to My Profile</Button>
                   </Link>
                 ) : (
                   <Link href="/login">
-                    <Button>Sign In</Button>
+                    <Button size="lg">Sign In</Button>
                   </Link>
                 )}
               </div>
