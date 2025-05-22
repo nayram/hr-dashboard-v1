@@ -423,39 +423,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">HR Specializations</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Specializations</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.specializations.map((spec: string) => (
-                        <Badge key={spec} variant="secondary">
-                          {getSpecializationLabel(spec)}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Languages</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.languages.map((language: string) => (
-                        <Badge key={language} variant="outline">
-                          {language}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-center mt-4">
-                <Button variant="outline" asChild>
-                  <Link href={`mailto:${formattedProfile.email}`}>Contact {formattedProfile.name.split(" ")[0]}</Link>
-                </Button>
-              </div>
             </div>
           </div>
         </CardContent>
