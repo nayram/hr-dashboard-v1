@@ -209,21 +209,6 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
         )}
       </div>
 
-      {image && !isUploading && (
-        <Button
-          variant="outline"
-          size="icon"
-          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-background border-gray-200"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleRemoveImage()
-          }}
-        >
-          <X className="h-3 w-3" />
-          <span className="sr-only">Remove image</span>
-        </Button>
-      )}
-
       <input
         type="file"
         ref={fileInputRef}
