@@ -60,7 +60,7 @@ export default function ProfilePage() {
       filePath: "",
       publicUrl: "",
       contentType: "",
-      uploadedAt: ""
+      uploadedAt: "",
     },
     skills: [] as string[],
     experience: [
@@ -159,7 +159,7 @@ export default function ProfilePage() {
           about: user.bio || prev.about,
           linkedin: user.linkedin,
           twitter: user.twitter,
-          profileImage:  user.profilePicture,
+          profileImage: user.profilePicture,
           skills: user.skills || prev.skills,
           experience: sortedExperience,
           education: sortedEducation,
@@ -413,11 +413,11 @@ export default function ProfilePage() {
   }
 
   const handleProfileImageChange = (image: {
-      filePath: string,
-      publicUrl: string,
-      contentType: string,
-      uploadedAt: string
-      }) => {
+    filePath: string
+    publicUrl: string
+    contentType: string
+    uploadedAt: string
+  }) => {
     setProfile((prev) => ({
       ...prev,
       profileImage: image,
@@ -727,7 +727,10 @@ export default function ProfilePage() {
                         type="email"
                         value={profile.email}
                         onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        disabled={true}
+                        className="bg-gray-50 text-gray-500 cursor-not-allowed"
                       />
+                      <p className="text-xs text-gray-500">Email cannot be changed for security reasons</p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
