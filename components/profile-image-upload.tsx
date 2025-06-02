@@ -19,7 +19,12 @@ import { ImageCropModal } from "@/components/image-crop-modal"
 interface ProfileImageUploadProps {
   initialImage?: string | null
   name: string
-  onImageChange: (imageUrl: string | null) => void
+  onImageChange: (image:{
+    filePath: string,
+    publicUrl: string,
+    contentType: string,
+    uploadedAt: string
+    }) => void
   className?: string
 }
 
@@ -98,7 +103,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       // Update the image in the component state
       const profilePictureUrl = updatedUser.profilePicture?.publicUrl || publicUrl
       setImage(profilePictureUrl)
-      onImageChange(profilePictureUrl)
+      onImageChange(updatedUser.profilePicture)
 
       // Update the user context with the updated user data
       updateUser(updatedUser)
@@ -141,7 +146,7 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
       onImageChange(null)
 
       // Update the user context with the updated user data
-      updateUser({ ...user, profilePicture: null })
+      updateUser({ ...user, profilePicture: {} })
 
       // Reset the file input
       if (fileInputRef.current) {

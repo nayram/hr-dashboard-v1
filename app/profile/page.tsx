@@ -56,7 +56,12 @@ export default function ProfilePage() {
     about: "",
     linkedin: "",
     twitter: "",
-    profileImage: null as string | null,
+    profileImage: {
+      filePath: "",
+      publicUrl: "",
+      contentType: "",
+      uploadedAt: ""
+    },
     skills: [] as string[],
     experience: [
       {
@@ -145,9 +150,6 @@ export default function ProfilePage() {
             })
           : prev.education
 
-        // Get profile picture URL from the new structure
-        const profileImageUrl = user.profilePicture?.publicUrl || null
-
         return {
           ...prev,
           name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
@@ -157,7 +159,7 @@ export default function ProfilePage() {
           about: user.bio || prev.about,
           linkedin: user.linkedin,
           twitter: user.twitter,
-          profileImage: profileImageUrl,
+          profileImage:  user.profilePicture,
           skills: user.skills || prev.skills,
           experience: sortedExperience,
           education: sortedEducation,
@@ -305,6 +307,7 @@ export default function ProfilePage() {
       linkedin: profile.linkedin || "",
       email: profile.email,
       address: "", // Not used in our UI but required by API
+      profilePicture: profile.profileImage,
       availability: {
         days: selectedDays,
         startTime: startTime, // Use 24-hour format directly
@@ -409,10 +412,15 @@ export default function ProfilePage() {
     }))
   }
 
-  const handleProfileImageChange = (imageUrl: string | null) => {
+  const handleProfileImageChange = (image: {
+      filePath: string,
+      publicUrl: string,
+      contentType: string,
+      uploadedAt: string
+      }) => {
     setProfile((prev) => ({
       ...prev,
-      profileImage: imageUrl,
+      profileImage: image,
     }))
   }
 
@@ -684,7 +692,7 @@ export default function ProfilePage() {
                   />
                 ) : (
                   <Avatar className="h-24 w-24 mb-4">
-                    <AvatarImage src={profile.profileImage || ""} alt={profile.name} />
+                    <AvatarImage src={profile.profileImage.publicUrl || ""} alt={profile.name} />
                     <AvatarFallback>
                       {profile.name
                         .split(" ")
