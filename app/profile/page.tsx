@@ -685,7 +685,7 @@ export default function ProfilePage() {
               <CardContent className="flex flex-col items-center text-center">
                 {isEditing ? (
                   <ProfileImageUpload
-                    initialImage={profile.profileImage}
+                    initialImage={profile.profileImage.publicUrl}
                     name={profile.name}
                     onImageChange={handleProfileImageChange}
                     className="mb-4"
