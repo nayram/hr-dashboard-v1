@@ -284,12 +284,12 @@ export default function ProfilePage() {
     const lastName = nameParts.slice(1).join(" ") || ""
 
     // Parse location into city and country
-    let city = ""
-    let country = ""
+    let city = null
+    let country = null
     if (profile.location) {
       const locationParts = profile.location.split(",")
-      city = locationParts[0]?.trim() || ""
-      country = locationParts[1]?.trim() || ""
+      city = locationParts[0]?.trim() || null
+      country = locationParts[1]?.trim() || null
     }
 
     // Format availability data
