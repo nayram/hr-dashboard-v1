@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const [availability, setAvailability] = useState<{ [key: string]: boolean }>({
     monday: false,
     tuesday: false,
-    wednesday: false,
+    wednessday: false,
     thursday: false,
     friday: false,
     saturday: false,
@@ -187,7 +187,7 @@ export default function ProfilePage() {
         const newAvailability = {
           monday: false,
           tuesday: false,
-          wednesday: false,
+          wednessday: false,
           thursday: false,
           friday: false,
           saturday: false,
@@ -312,7 +312,7 @@ export default function ProfilePage() {
         timeZone: timezone,
       },
       location: {
-        country: country || "Unknown",
+        country: country,
         city: city || "Unknown",
         type: profile.preferences.setupType || "Remote",
       },
