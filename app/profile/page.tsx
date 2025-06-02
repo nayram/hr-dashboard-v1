@@ -316,7 +316,7 @@ export default function ProfilePage() {
       },
       location: {
         country: country,
-        city: city || "Unknown",
+        city: city,
         type: profile.preferences.setupType || "Remote",
       },
       setupType: profile.preferences.setupType || "Remote",
