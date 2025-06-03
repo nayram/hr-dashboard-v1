@@ -42,6 +42,7 @@ export default function ProfilePage() {
   const [startTime, setStartTime] = useState<string>("09:00")
   const [endTime, setEndTime] = useState<string>("17:00")
   const [timezone, setTimezone] = useState<string>("Europe/Paris")
+  const [skillsInput, setSkillsInput] = useState<string>("")
 
   // Update the profile state initialization to include profileImage
   const [profile, setProfile] = useState({
@@ -99,7 +100,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
-        return {
+        const updatedProfile = {
           ...prev,
           name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
           email: user.email || prev.email,
@@ -112,18 +113,20 @@ export default function ProfilePage() {
           skills: user.skills || prev.skills,
           preferences: {
             ...prev.preferences,
-            // Map the API industries values to industryFocus
             industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
             companySize: user.preferences?.companySize || prev.preferences.companySize,
             recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
             specializations: user.preferences?.specialization || prev.preferences.specializations,
-            // Map setupType directly from the API
             setupType: user.preferences?.setupType || prev.preferences.setupType,
-            // Keep workStyle for backward compatibility
             workStyle: user.preferences?.workStyle || prev.preferences.workStyle,
             languages: user.languages || prev.preferences.languages,
           },
         }
+
+        // Set the skills input when user data loads
+        setSkillsInput((user.skills || []).join(", "))
+
+        return updatedProfile
       })
     }
   }, [user])
@@ -473,7 +476,14 @@ export default function ProfilePage() {
                 <div className="flex justify-between items-center">
                   <CardTitle>Personal Info</CardTitle>
                   {!isEditing && (
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(true)
+                        setSkillsInput(profile.skills.join(", "))
+                      }}
+                    >
                       Edit
                     </Button>
                   )}
@@ -620,21 +630,39 @@ export default function ProfilePage() {
                       <Label htmlFor="skills">Skills (comma separated)</Label>
                       <Textarea
                         id="skills"
-                        value={profile.skills.join(", ")}
-                        onChange={(e) => {
-                          // Split by comma and only trim leading/trailing whitespace, preserving internal spaces
-                          const skillsArray = e.target.value
+                        value={skillsInput}
+                        onChange={(e) => setSkillsInput(e.target.value)}
+                        onBlur={() => {
+                          // Process skills when user finishes editing
+                          const skillsArray = skillsInput
                             .split(",")
                             .map((skill) => skill.trim())
-                            .filter((skill) => skill.length > 0) // Remove empty skills
+                            .filter((skill) => skill.length > 0)
                           setProfile({ ...profile, skills: skillsArray })
                         }}
                         placeholder="Performance Management, Employee Relations, Talent Acquisition, etc."
                         className="min-h-[100px]"
                       />
                       <p className="text-xs text-gray-500">
-                        Separate skills with commas. Spaces within skill names are preserved.
+                        Separate skills with commas. Skills will be processed when you click outside the field.
                       </p>
+                      {/* Show preview of processed skills */}
+                      {skillsInput && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-600 mb-1">Preview:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {skillsInput
+                              .split(",")
+                              .map((skill) => skill.trim())
+                              .filter((skill) => skill.length > 0)
+                              .map((skill, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
