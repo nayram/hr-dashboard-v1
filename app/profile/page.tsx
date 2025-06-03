@@ -621,11 +621,20 @@ export default function ProfilePage() {
                       <Textarea
                         id="skills"
                         value={profile.skills.join(", ")}
-                        onChange={(e) =>
-                          setProfile({ ...profile, skills: e.target.value.split(",").map((skill) => skill.trim()) })
-                        }
-                        placeholder="Talent Acquisition, Employee Relations, Performance Management, etc."
+                        onChange={(e) => {
+                          // Split by comma and only trim leading/trailing whitespace, preserving internal spaces
+                          const skillsArray = e.target.value
+                            .split(",")
+                            .map((skill) => skill.trim())
+                            .filter((skill) => skill.length > 0) // Remove empty skills
+                          setProfile({ ...profile, skills: skillsArray })
+                        }}
+                        placeholder="Performance Management, Employee Relations, Talent Acquisition, etc."
+                        className="min-h-[100px]"
                       />
+                      <p className="text-xs text-gray-500">
+                        Separate skills with commas. Spaces within skill names are preserved.
+                      </p>
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
