@@ -1,11 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    optimizeCss: true,
-  },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -15,6 +9,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  swcMinify: true,
+  reactStrictMode: true,
 }
 
 export default nextConfig
