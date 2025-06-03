@@ -11,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -20,8 +19,6 @@ import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
 import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2 } from "lucide-react"
-import { MonthYearPicker } from "@/components/month-year-picker"
-import { YearPicker } from "@/components/year-picker"
 import { format } from "date-fns"
 import { updateUserProfile } from "@/lib/api"
 
@@ -63,23 +60,6 @@ export default function ProfilePage() {
       uploadedAt: "",
     },
     skills: [] as string[],
-    experience: [
-      {
-        title: "",
-        company: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-        location: "",
-      },
-    ],
-    education: [
-      {
-        degree: "",
-        institution: "",
-        year: "",
-      },
-    ],
     preferences: {
       industryFocus: [] as string[],
       companySize: [] as string[],
@@ -115,41 +95,10 @@ export default function ProfilePage() {
     return format(date, "MM/yyyy")
   }
 
-  // Helper function to sort experiences by startDate (most recent first)
-  const sortExperiencesByDate = (experiences: any[]) => {
-    return [...experiences].sort((a, b) => {
-      // Handle "Present" for end date (should be considered as the most recent)
-      if (a.endDate === "Present" && b.endDate !== "Present") return -1
-      if (a.endDate !== "Present" && b.endDate === "Present") return 1
-
-      // Compare start dates (most recent first)
-      const dateA = parseDateString(a.startDate)
-      const dateB = parseDateString(b.startDate)
-
-      if (!dateA && !dateB) return 0
-      if (!dateA) return 1
-      if (!dateB) return -1
-
-      return dateB.getTime() - dateA.getTime()
-    })
-  }
-
   // Update the useEffect that loads user data to handle the new profilePicture structure
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
-        // Sort experience by startDate (most recent first) only when loading from API
-        const sortedExperience = user.experience ? sortExperiencesByDate(user.experience) : prev.experience
-
-        // Sort education by year (most recent first)
-        const sortedEducation = user.education
-          ? [...user.education].sort((a, b) => {
-              const yearA = Number.parseInt(a.year) || 0
-              const yearB = Number.parseInt(b.year) || 0
-              return yearB - yearA // Most recent first
-            })
-          : prev.education
-
         return {
           ...prev,
           name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
@@ -161,8 +110,6 @@ export default function ProfilePage() {
           twitter: user.twitter,
           profileImage: user.profilePicture,
           skills: user.skills || prev.skills,
-          experience: sortedExperience,
-          education: sortedEducation,
           preferences: {
             ...prev.preferences,
             // Map the API industries values to industryFocus
@@ -332,19 +279,8 @@ export default function ProfilePage() {
         specialization: profile.preferences.specializations || [],
       },
       cv: [],
-      experience: profile.experience.map((exp) => ({
-        title: exp.title || "",
-        company: exp.company || "",
-        startDate: exp.startDate || "",
-        endDate: exp.endDate || "",
-        description: exp.description || "",
-        location: exp.location || "",
-      })),
-      education: profile.education.map((edu) => ({
-        degree: edu.degree || "",
-        institution: edu.institution || "",
-        year: edu.year || "",
-      })),
+      experience: [],
+      education: [],
       skills: profile.skills || [],
       payment: {
         organizationType: "As a freelance", // Default value
@@ -353,20 +289,6 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = async () => {
-    // Check for date validation errors in all experiences
-    const hasDateErrors = profile.experience.some((exp) => exp.dateError)
-
-    if (hasDateErrors) {
-      toast({
-        title: "Validation Error",
-        description: "Please fix the date errors in your experience entries",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Don't sort experiences before saving - maintain the order as edited by the user
-
     if (!token) {
       toast({
         title: "Authentication Error",
@@ -475,142 +397,17 @@ export default function ProfilePage() {
   }
 
   // Handle start date change
-  const handleStartDateChange = (index: number, date: Date | null) => {
-    const newExp = [...profile.experience]
-    newExp[index].startDate = date ? formatDateToString(date) : ""
-
-    // Clear date validation error when start date changes
-    if (newExp[index].dateError) {
-      delete newExp[index].dateError
-    }
-
-    // Validate dates if both start and end dates exist
-    validateDates(newExp, index)
-
-    setProfile({ ...profile, experience: newExp })
-  }
-
   // Handle end date change
-  const handleEndDateChange = (index: number, date: Date | null) => {
-    const newExp = [...profile.experience]
-    newExp[index].endDate = date ? formatDateToString(date) : ""
-
-    // Validate dates if both start and end dates exist
-    validateDates(newExp, index)
-
-    setProfile({ ...profile, experience: newExp })
-  }
-
   // Handle "Present" toggle for end date
-  const handlePresentToggle = (index: number, isPresent: boolean) => {
-    const newExp = [...profile.experience]
-    newExp[index].endDate = isPresent ? "Present" : ""
-
-    // Clear date validation error when toggling to "Present"
-    if (isPresent && newExp[index].dateError) {
-      delete newExp[index].dateError
-    }
-
-    setProfile({ ...profile, experience: newExp })
-  }
-
   // Handle education year change
-  const handleEducationYearChange = (index: number, year: string) => {
-    const newEdu = [...profile.education]
-    newEdu[index].year = year
-    setProfile({ ...profile, education: newEdu })
-  }
-
   // Validate dates
-  const validateDates = (experiences: any[], index: number) => {
-    const exp = experiences[index]
-
-    // Skip validation if end date is "Present" or either date is missing
-    if (!exp.startDate || !exp.endDate || exp.endDate === "Present") {
-      delete exp.dateError
-      return
-    }
-
-    const startDate = parseDateString(exp.startDate)
-    const endDate = parseDateString(exp.endDate)
-
-    if (startDate && endDate && endDate < startDate) {
-      exp.dateError = "End date must be after start date"
-    } else {
-      delete exp.dateError
-    }
-  }
-
   // Check if a date string is "Present"
-  const isDatePresent = (dateStr: string): boolean => {
-    return dateStr.toLowerCase() === "present"
-  }
-
   // Handle removing an experience entry
-  const handleRemoveExperience = (index: number) => {
-    const newExperience = [...profile.experience]
-    newExperience.splice(index, 1)
-
-    // Ensure there's always at least one experience entry
-    if (newExperience.length === 0) {
-      newExperience.push({
-        title: "",
-        company: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-        location: "",
-      })
-    }
-
-    setProfile({ ...profile, experience: newExperience })
-    toast({
-      title: "Experience removed",
-      description: "The experience entry has been removed from your profile.",
-    })
-  }
-
   // Handle removing an education entry
-  const handleRemoveEducation = (index: number) => {
-    const newEducation = [...profile.education]
-    newEducation.splice(index, 1)
-
-    // Ensure there's always at least one education entry
-    if (newEducation.length === 0) {
-      newEducation.push({
-        degree: "",
-        institution: "",
-        year: "",
-      })
-    }
-
-    setProfile({ ...profile, education: newEducation })
-    toast({
-      title: "Education removed",
-      description: "The education entry has been removed from your profile.",
-    })
-  }
-
   // Handle adding a new experience entry
-  const handleAddExperience = () => {
-    const newExperience = [
-      ...profile.experience,
-      {
-        title: "",
-        company: "",
-        startDate: "",
-        endDate: "",
-        description: "",
-        location: "",
-        dateError: undefined,
-      },
-    ]
-
-    setProfile({ ...profile, experience: newExperience })
-  }
 
   // Only sort experiences for display in read-only mode
-  const displayExperiences = isEditing ? profile.experience : sortExperiencesByDate(profile.experience)
+  // const displayExperiences = isEditing ? profile.experience : sortExperiencesByDate(profile.experience)
 
   return (
     <div className="container mx-auto py-6 max-w-6xl">
@@ -846,255 +643,35 @@ export default function ProfilePage() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Work Experience</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {displayExperiences.map((exp, index) => (
-                      <div key={index} className="space-y-2">
-                        {isEditing ? (
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor={`job-title-${index}`}>Job Title</Label>
-                                <Input
-                                  id={`job-title-${index}`}
-                                  value={exp.title}
-                                  onChange={(e) => {
-                                    const newExp = [...profile.experience]
-                                    const expIndex = profile.experience.findIndex((item) => item === exp)
-                                    if (expIndex !== -1) {
-                                      newExp[expIndex].title = e.target.value
-                                      setProfile({ ...profile, experience: newExp })
-                                    }
-                                  }}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor={`company-${index}`}>Company</Label>
-                                <Input
-                                  id={`company-${index}`}
-                                  value={exp.company}
-                                  onChange={(e) => {
-                                    const newExp = [...profile.experience]
-                                    const expIndex = profile.experience.findIndex((item) => item === exp)
-                                    if (expIndex !== -1) {
-                                      newExp[expIndex].company = e.target.value
-                                      setProfile({ ...profile, experience: newExp })
-                                    }
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor={`start-date-${index}`}>Start Date</Label>
-                                <MonthYearPicker
-                                  value={parseDateString(exp.startDate)}
-                                  onChange={(date) => {
-                                    const expIndex = profile.experience.findIndex((item) => item === exp)
-                                    if (expIndex !== -1) {
-                                      handleStartDateChange(expIndex, date)
-                                    }
-                                  }}
-                                  placeholder="Select start date"
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor={`end-date-${index}`}>End Date</Label>
-                                <MonthYearPicker
-                                  value={isDatePresent(exp.endDate) ? null : parseDateString(exp.endDate)}
-                                  onChange={(date) => {
-                                    const expIndex = profile.experience.findIndex((item) => item === exp)
-                                    if (expIndex !== -1) {
-                                      handleEndDateChange(expIndex, date)
-                                    }
-                                  }}
-                                  placeholder="Select end date"
-                                  allowPresent={true}
-                                  isPresent={isDatePresent(exp.endDate)}
-                                  onPresentChange={(isPresent) => {
-                                    const expIndex = profile.experience.findIndex((item) => item === exp)
-                                    if (expIndex !== -1) {
-                                      handlePresentToggle(expIndex, isPresent)
-                                    }
-                                  }}
-                                  className={exp.dateError ? "border-red-500" : ""}
-                                />
-                                {exp.dateError && (
-                                  <div className="flex items-center mt-1 text-red-500 text-xs">
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    {exp.dateError}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`location-${index}`}>Location</Label>
-                              <Input
-                                id={`location-${index}`}
-                                value={exp.location || ""}
-                                onChange={(e) => {
-                                  const newExp = [...profile.experience]
-                                  const expIndex = profile.experience.findIndex((item) => item === exp)
-                                  if (expIndex !== -1) {
-                                    newExp[expIndex].location = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
-                                  }
-                                }}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`description-${index}`}>Description</Label>
-                              <Textarea
-                                id={`description-${index}`}
-                                value={exp.description}
-                                onChange={(e) => {
-                                  const newExp = [...profile.experience]
-                                  const expIndex = profile.experience.findIndex((item) => item === exp)
-                                  if (expIndex !== -1) {
-                                    newExp[expIndex].description = e.target.value
-                                    setProfile({ ...profile, experience: newExp })
-                                  }
-                                }}
-                              />
-                            </div>
-                            <div className="flex justify-end mt-4">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => {
-                                  const expIndex = profile.experience.findIndex((item) => item === exp)
-                                  if (expIndex !== -1) {
-                                    handleRemoveExperience(expIndex)
-                                  }
-                                }}
-                                disabled={profile.experience.length <= 1}
-                                className="text-xs"
-                              >
-                                Remove Experience
-                              </Button>
-                            </div>
-                            {index < displayExperiences.length - 1 && <Separator className="my-4" />}
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex justify-between">
-                              <div>
-                                <h3 className="font-semibold">{exp.title || "No title provided"}</h3>
-                                <p className="text-gray-500">{exp.company || "No company provided"}</p>
-                                {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
-                              </div>
-                              <span className="text-sm text-gray-500">
-                                {exp.startDate && exp.endDate
-                                  ? `${exp.startDate} - ${exp.endDate}`
-                                  : exp.period || "No period provided"}
-                              </span>
-                            </div>
-                            <p>{exp.description || "No description provided"}</p>
-                            {index < displayExperiences.length - 1 && <Separator className="my-4" />}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {isEditing && (
-                      <Button variant="outline" onClick={handleAddExperience}>
-                        Add Experience
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              {/*
+<Card>
+  <CardHeader>
+    <CardTitle>Work Experience</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="space-y-6">
+      {displayExperiences.map((exp, index) => (
+        // ... entire work experience content
+      ))}
+    </div>
+  </CardContent>
+</Card>
+*/}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Education</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {profile.education.map((edu, index) => (
-                      <div key={index} className="space-y-2">
-                        {isEditing ? (
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor={`degree-${index}`}>Degree</Label>
-                              <Input
-                                id={`degree-${index}`}
-                                value={edu.degree}
-                                onChange={(e) => {
-                                  const newEdu = [...profile.education]
-                                  newEdu[index].degree = e.target.value
-                                  setProfile({ ...profile, education: newEdu })
-                                }}
-                              />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor={`institution-${index}`}>Institution</Label>
-                                <Input
-                                  id={`institution-${index}`}
-                                  value={edu.institution}
-                                  onChange={(e) => {
-                                    const newEdu = [...profile.education]
-                                    newEdu[index].institution = e.target.value
-                                    setProfile({ ...profile, education: newEdu })
-                                  }}
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <Label htmlFor={`year-${index}`}>Year</Label>
-                                <YearPicker
-                                  value={edu.year}
-                                  onChange={(year) => handleEducationYearChange(index, year)}
-                                  placeholder="Select graduation year"
-                                />
-                              </div>
-                            </div>
-                            <div className="flex justify-end mt-4">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleRemoveEducation(index)}
-                                disabled={profile.education.length <= 1}
-                                className="text-xs"
-                              >
-                                Remove Education
-                              </Button>
-                            </div>
-                            {index < profile.education.length - 1 && <Separator className="my-4" />}
-                          </div>
-                        ) : (
-                          <>
-                            <div className="flex justify-between">
-                              <div>
-                                <h3 className="font-semibold">{edu.degree || "No degree provided"}</h3>
-                                <p className="text-gray-500">{edu.institution || "No institution provided"}</p>
-                              </div>
-                              <span className="text-sm text-gray-500">{edu.year || "No year provided"}</span>
-                            </div>
-                            {index < profile.education.length - 1 && <Separator className="my-4" />}
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    {isEditing && (
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setProfile({
-                            ...profile,
-                            education: [...profile.education, { degree: "", institution: "", year: "" }],
-                          })
-                        }
-                      >
-                        Add Education
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              {/*
+<Card>
+  <CardHeader>
+    <CardTitle>Education</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="space-y-4">
+      {profile.education.map((edu, index) => (
+        // ... entire education content
+      ))}
+    </div>
+  </CardContent>
+</Card>
+*/}
 
               {isEditing && (
                 <div className="flex justify-end gap-2">

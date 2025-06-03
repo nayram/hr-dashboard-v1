@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Linkedin, Mail, MapPin, Phone, Twitter, Loader2 } from "lucide-react"
 import Link from "next/link"
 import type { HRPreferencesData } from "@/components/hr-preferences"
@@ -123,39 +122,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     twitter: profile.twitter || "",
     profileImage: profile.profilePicture?.publicUrl || null,
     skills: profile.skills || [],
-    // Sort experience by startDate (most recent first)
-    experience: profile.experience
-      ? [...profile.experience].sort((a, b) => {
-          // Handle "Present" for end date (should be considered as the most recent)
-          if (a.endDate === "Present" && b.endDate !== "Present") return -1
-          if (a.endDate !== "Present" && b.endDate === "Present") return 1
-
-          // Parse dates properly (MM/YYYY format)
-          const parseDate = (dateStr: string) => {
-            if (!dateStr) return new Date(0)
-            const parts = dateStr.split("/")
-            if (parts.length === 2) {
-              const month = Number.parseInt(parts[0], 10) - 1 // JS months are 0-indexed
-              const year = Number.parseInt(parts[1], 10)
-              return new Date(year, month, 1)
-            }
-            return new Date(0)
-          }
-
-          const dateA = parseDate(a.startDate)
-          const dateB = parseDate(b.startDate)
-
-          return dateB.getTime() - dateA.getTime() // Most recent first
-        })
-      : [],
-    // Sort education by year (most recent first)
-    education: profile.education
-      ? [...profile.education].sort((a, b) => {
-          const yearA = Number.parseInt(a.year) || 0
-          const yearB = Number.parseInt(b.year) || 0
-          return yearB - yearA // Most recent first
-        })
-      : [],
     availability: {
       days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
@@ -274,53 +240,57 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                 </CardContent>
               </Card>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Experience</h3>
-                <div className="space-y-4">
-                  {formattedProfile.experience.map((exp: any, index: number) => (
-                    <div key={index}>
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="font-medium">{exp.title || "No title provided"}</h4>
-                          <p className="text-gray-500">{exp.company || "No company provided"}</p>
-                          {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {exp.startDate && exp.endDate
-                            ? `${exp.startDate} - ${exp.endDate}`
-                            : exp.period || "No period provided"}
-                        </span>
-                      </div>
-                      <p className="text-sm mt-1">{exp.description || "No description provided"}</p>
-                      {index < formattedProfile.experience.length - 1 && <Separator className="my-3" />}
-                    </div>
-                  ))}
-                  {formattedProfile.experience.length === 0 && (
-                    <p className="text-gray-500">No experience information provided.</p>
-                  )}
-                </div>
-              </div>
+              {/*
+<div>
+  <h3 className="text-lg font-semibold mb-2">Experience</h3>
+  <div className="space-y-4">
+    {formattedProfile.experience.map((exp: any, index: number) => (
+      <div key={index}>
+        <div className="flex justify-between">
+          <div>
+            <h4 className="font-medium">{exp.title || "No title provided"}</h4>
+            <p className="text-gray-500">{exp.company || "No company provided"}</p>
+            {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
+          </div>
+          <span className="text-sm text-gray-500">
+            {exp.startDate && exp.endDate
+              ? `${exp.startDate} - ${exp.endDate}`
+              : exp.period || "No period provided"}
+          </span>
+        </div>
+        <p className="text-sm mt-1">{exp.description || "No description provided"}</p>
+        {index < formattedProfile.experience.length - 1 && <Separator className="my-3" />}
+      </div>
+    ))}
+    {formattedProfile.experience.length === 0 && (
+      <p className="text-gray-500">No experience information provided.</p>
+    )}
+  </div>
+</div>
+*/}
 
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Education</h3>
-                <div className="space-y-3">
-                  {formattedProfile.education.map((edu: any, index: number) => (
-                    <div key={index}>
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="font-medium">{edu.degree || "No degree provided"}</h4>
-                          <p className="text-gray-500">{edu.institution || "No institution provided"}</p>
-                        </div>
-                        <span className="text-sm text-gray-500">{edu.year || "No year provided"}</span>
-                      </div>
-                      {index < formattedProfile.education.length - 1 && <Separator className="my-3" />}
-                    </div>
-                  ))}
-                  {formattedProfile.education.length === 0 && (
-                    <p className="text-gray-500">No education information provided.</p>
-                  )}
-                </div>
-              </div>
+              {/*
+<div>
+  <h3 className="text-lg font-semibold mb-2">Education</h3>
+  <div className="space-y-3">
+    {formattedProfile.education.map((edu: any, index: number) => (
+      <div key={index}>
+        <div className="flex justify-between">
+          <div>
+            <h4 className="font-medium">{edu.degree || "No degree provided"}</h4>
+            <p className="text-gray-500">{edu.institution || "No institution provided"}</p>
+          </div>
+          <span className="text-sm text-gray-500">{edu.year || "No year provided"}</span>
+        </div>
+        {index < formattedProfile.education.length - 1 && <Separator className="my-3" />}
+      </div>
+    ))}
+    {formattedProfile.education.length === 0 && (
+      <p className="text-gray-500">No education information provided.</p>
+    )}
+  </div>
+</div>
+*/}
             </div>
 
             <div className="space-y-6">
