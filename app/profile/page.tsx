@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
@@ -742,26 +741,17 @@ export default function ProfilePage() {
               <CardDescription>Let others know when you're available for meetings and consultations</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-4">Weekly Availability</h3>
-                  <div className="space-y-4">
-                    {Object.entries(availability).map(([day, isAvailable]) => (
-                      <div key={day} className="flex items-center justify-between">
-                        <Label htmlFor={`day-${day}`} className="capitalize">
-                          {day}
-                        </Label>
-                        <Switch id={`day-${day}`} checked={isAvailable} onCheckedChange={() => toggleDay(day)} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-medium mb-4">Upcoming Availability</h3>
-                  <div className="border rounded-md p-4">
-                    <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
-                  </div>
+              <div>
+                <h3 className="text-lg font-medium mb-4">Weekly Availability</h3>
+                <div className="space-y-4">
+                  {Object.entries(availability).map(([day, isAvailable]) => (
+                    <div key={day} className="flex items-center justify-between">
+                      <Label htmlFor={`day-${day}`} className="capitalize">
+                        {day}
+                      </Label>
+                      <Switch id={`day-${day}`} checked={isAvailable} onCheckedChange={() => toggleDay(day)} />
+                    </div>
+                  ))}
                 </div>
               </div>
 
