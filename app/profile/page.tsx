@@ -389,7 +389,7 @@ export default function ProfilePage() {
       }
 
       // Send only the availability data to the API
-      const updatedUser = await updateUserProfile(token, availabilityData)
+      const updatedUser = await updateUserProfile(token, { ...profile, ...availabilityData})
 
       // Update the user context with the new data
       updateUser(updatedUser)
