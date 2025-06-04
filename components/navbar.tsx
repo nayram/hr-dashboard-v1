@@ -6,9 +6,14 @@ import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { LogoutButton } from "@/components/logout-button"
 import { User } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 export function Navbar() {
   const { isAuthenticated, user } = useAuth()
+  const pathname = usePathname()
+
+  // Check if we're on a public profile page
+  const isPublicProfilePage = pathname?.startsWith("/view/")
 
   return (
     <header className="border-b">
@@ -27,9 +32,12 @@ export function Navbar() {
               <LogoutButton showConfirmDialog={false} />
             </>
           ) : (
-            <Link href="/login">
-              <Button variant="outline">Sign In</Button>
-            </Link>
+            // Only show sign-in button if not on a public profile page
+            !isPublicProfilePage && (
+              <Link href="/login">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+            )
           )}
         </nav>
       </div>

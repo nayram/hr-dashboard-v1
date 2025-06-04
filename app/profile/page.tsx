@@ -58,7 +58,7 @@ export default function ProfilePage() {
   // Update the profile state initialization to include profileImage
   const [profile, setProfile] = useState({
     name: "",
-    title: "HR Professional",
+    title: "",
     email: "",
     phone: "",
     location: "",
@@ -431,35 +431,12 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto py-6 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My HR Profile</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCopyProfileLink}>
-            <Copy className="h-4 w-4 mr-2" />
-            Copy Profile Link
-          </Button>
-          {user?.username ? (
-            <Link href={`/view/${user.username}`} target="_blank">
-              <Button variant="outline">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Public Profile
-              </Button>
-            </Link>
-          ) : (
-            <Button variant="outline" onClick={handleViewPublicProfile}>
-              <ExternalLink className="h-4 w-4 mr-2" />
-              View Public Profile
-            </Button>
-          )}
-        </div>
-      </div>
-
       {!user?.username && (
         <Alert className="mb-6 border-yellow-200 bg-yellow-50">
           <AlertCircle className="h-4 w-4 text-yellow-600" />
           <AlertTitle className="text-yellow-800">Username Required</AlertTitle>
           <AlertDescription className="text-yellow-700">
-            You need to create a username to share your profile.
+            Please create a username. This will be used when sharing your profile with companies
             <Button
               variant="link"
               className="p-0 h-auto text-yellow-700 font-semibold hover:text-yellow-900"
@@ -470,14 +447,6 @@ export default function ProfilePage() {
           </AlertDescription>
         </Alert>
       )}
-
-      <Alert className="mb-6">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Profile Visibility</AlertTitle>
-        <AlertDescription>
-          Your public profile is visible to anyone with the link. Only share with trusted contacts.
-        </AlertDescription>
-      </Alert>
 
       <Tabs defaultValue="profile">
         <TabsList className="mb-4">
