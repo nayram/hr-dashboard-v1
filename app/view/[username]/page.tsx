@@ -203,30 +203,15 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                 </div>
               </div>
 
-              {/* Skills Preview */}
-              <div className="flex flex-wrap gap-2">
-                {formattedProfile.skills.slice(0, 6).map((skill: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-sm">
-                    {skill}
-                  </Badge>
-                ))}
-                {formattedProfile.skills.length > 6 && (
-                  <Badge variant="outline" className="text-sm">
-                    +{formattedProfile.skills.length - 6} more
-                  </Badge>
-                )}
+              {/* Contact Button */}
+              <div className="flex justify-start">
+                <Button asChild size="lg">
+                  <Link href={`mailto:${formattedProfile.email}`}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Contact {formattedProfile.name.split(" ")[0]}
+                  </Link>
+                </Button>
               </div>
-            </div>
-
-            {/* Contact Button */}
-            <div className="flex flex-col gap-2">
-              <Button asChild size="lg">
-                <Link href={`mailto:${formattedProfile.email}`}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact {formattedProfile.name.split(" ")[0]}
-                </Link>
-              </Button>
-              <p className="text-xs text-gray-500 text-center">Available for client work</p>
             </div>
           </div>
         </CardHeader>
@@ -449,22 +434,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   {formattedProfile.preferences.languages.length}
                 </Badge>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Contact Card */}
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-            <CardHeader>
-              <CardTitle className="text-base text-blue-900">Ready to Connect?</CardTitle>
-              <CardDescription className="text-blue-700">Get in touch to discuss your HR needs</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className="w-full" size="lg">
-                <Link href={`mailto:${formattedProfile.email}`}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Message
-                </Link>
-              </Button>
             </CardContent>
           </Card>
         </div>
