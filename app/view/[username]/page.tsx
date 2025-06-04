@@ -202,16 +202,6 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   )}
                 </div>
               </div>
-
-              {/* Contact Button */}
-              <div className="flex justify-start">
-                <Button asChild size="lg">
-                  <Link href={`mailto:${formattedProfile.email}`}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Contact {formattedProfile.name.split(" ")[0]}
-                  </Link>
-                </Button>
-              </div>
             </div>
           </div>
         </CardHeader>
