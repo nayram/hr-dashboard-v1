@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
@@ -18,7 +17,19 @@ import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferenc
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
-import { Copy, ExternalLink, AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2 } from "lucide-react"
+import {
+  Copy,
+  ExternalLink,
+  AlertCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Linkedin,
+  Loader2,
+  Clock,
+  Calendar,
+  Globe,
+} from "lucide-react"
 import { format } from "date-fns"
 import { updateUserProfile } from "@/lib/api"
 
@@ -42,6 +53,7 @@ export default function ProfilePage() {
   const [startTime, setStartTime] = useState<string>("09:00")
   const [endTime, setEndTime] = useState<string>("17:00")
   const [timezone, setTimezone] = useState<string>("Europe/Paris")
+  const [skillsInput, setSkillsInput] = useState<string>("")
 
   // Update the profile state initialization to include profileImage
   const [profile, setProfile] = useState({
@@ -99,7 +111,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user) {
       setProfile((prev) => {
-        return {
+        const updatedProfile = {
           ...prev,
           name: user.name ? `${user.name} ${user.lastName || ""}`.trim() : prev.name,
           email: user.email || prev.email,
@@ -112,18 +124,20 @@ export default function ProfilePage() {
           skills: user.skills || prev.skills,
           preferences: {
             ...prev.preferences,
-            // Map the API industries values to industryFocus
             industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
             companySize: user.preferences?.companySize || prev.preferences.companySize,
             recruitmentFocus: user.preferences?.recruitmentRoles || prev.preferences.recruitmentFocus,
             specializations: user.preferences?.specialization || prev.preferences.specializations,
-            // Map setupType directly from the API
             setupType: user.preferences?.setupType || prev.preferences.setupType,
-            // Keep workStyle for backward compatibility
             workStyle: user.preferences?.workStyle || prev.preferences.workStyle,
             languages: user.languages || prev.preferences.languages,
           },
         }
+
+        // Set the skills input when user data loads
+        setSkillsInput((user.skills || []).join(", "))
+
+        return updatedProfile
       })
     }
   }, [user])
@@ -396,18 +410,24 @@ export default function ProfilePage() {
     }
   }
 
-  // Handle start date change
-  // Handle end date change
-  // Handle "Present" toggle for end date
-  // Handle education year change
-  // Validate dates
-  // Check if a date string is "Present"
-  // Handle removing an experience entry
-  // Handle removing an education entry
-  // Handle adding a new experience entry
+  // Helper function to get day display name
+  const getDayDisplayName = (day: string) => {
+    const dayNames = {
+      monday: "Monday",
+      tuesday: "Tuesday",
+      wednessday: "Wednesday", // Note: keeping the typo from original state
+      thursday: "Thursday",
+      friday: "Friday",
+      saturday: "Saturday",
+      sunday: "Sunday",
+    }
+    return dayNames[day as keyof typeof dayNames] || day
+  }
 
-  // Only sort experiences for display in read-only mode
-  // const displayExperiences = isEditing ? profile.experience : sortExperiencesByDate(profile.experience)
+  // Helper function to get selected days count
+  const getSelectedDaysCount = () => {
+    return Object.values(availability).filter(Boolean).length
+  }
 
   return (
     <div className="container mx-auto py-6 max-w-6xl">
@@ -473,7 +493,14 @@ export default function ProfilePage() {
                 <div className="flex justify-between items-center">
                   <CardTitle>Personal Info</CardTitle>
                   {!isEditing && (
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIsEditing(true)
+                        setSkillsInput(profile.skills.join(", "))
+                      }}
+                    >
                       Edit
                     </Button>
                   )}
@@ -620,12 +647,39 @@ export default function ProfilePage() {
                       <Label htmlFor="skills">Skills (comma separated)</Label>
                       <Textarea
                         id="skills"
-                        value={profile.skills.join(", ")}
-                        onChange={(e) =>
-                          setProfile({ ...profile, skills: e.target.value.split(",").map((skill) => skill.trim()) })
-                        }
-                        placeholder="Talent Acquisition, Employee Relations, Performance Management, etc."
+                        value={skillsInput}
+                        onChange={(e) => setSkillsInput(e.target.value)}
+                        onBlur={() => {
+                          // Process skills when user finishes editing
+                          const skillsArray = skillsInput
+                            .split(",")
+                            .map((skill) => skill.trim())
+                            .filter((skill) => skill.length > 0)
+                          setProfile({ ...profile, skills: skillsArray })
+                        }}
+                        placeholder="Performance Management, Employee Relations, Talent Acquisition, etc."
+                        className="min-h-[100px]"
                       />
+                      <p className="text-xs text-gray-500">
+                        Separate skills with commas. Skills will be processed when you click outside the field.
+                      </p>
+                      {/* Show preview of processed skills */}
+                      {skillsInput && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-600 mb-1">Preview:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {skillsInput
+                              .split(",")
+                              .map((skill) => skill.trim())
+                              .filter((skill) => skill.length > 0)
+                              .map((skill, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {skill}
+                                </Badge>
+                              ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
@@ -642,36 +696,6 @@ export default function ProfilePage() {
                   )}
                 </CardContent>
               </Card>
-
-              {/*
-<Card>
-  <CardHeader>
-    <CardTitle>Work Experience</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="space-y-6">
-      {displayExperiences.map((exp, index) => (
-        // ... entire work experience content
-      ))}
-    </div>
-  </CardContent>
-</Card>
-*/}
-
-              {/*
-<Card>
-  <CardHeader>
-    <CardTitle>Education</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="space-y-4">
-      {profile.education.map((edu, index) => (
-        // ... entire education content
-      ))}
-    </div>
-  </CardContent>
-</Card>
-*/}
 
               {isEditing && (
                 <div className="flex justify-end gap-2">
@@ -699,109 +723,191 @@ export default function ProfilePage() {
         </TabsContent>
 
         <TabsContent value="availability">
-          <Card>
-            <CardHeader>
-              <CardTitle>Set Your Availability</CardTitle>
-              <CardDescription>Let others know when you're available for meetings and consultations</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-medium mb-4">Weekly Availability</h3>
+          <div className="space-y-6">
+            {/* Availability Overview Card */}
+            <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-blue-900">Set Your Availability</CardTitle>
+                    <CardDescription className="text-blue-700">
+                      Let clients know when you're available to work with them
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 text-sm text-blue-800">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{getSelectedDaysCount()} days selected</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>
+                      {startTime} - {endTime}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <span>{timezone.replace(/_/g, " ")}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Weekly Availability Card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-gray-600" />
+                    <CardTitle>Weekly Availability</CardTitle>
+                  </div>
+                  <CardDescription>Select the days you're available for client work</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-4">
                     {Object.entries(availability).map(([day, isAvailable]) => (
-                      <div key={day} className="flex items-center justify-between">
-                        <Label htmlFor={`day-${day}`} className="capitalize">
-                          {day}
+                      <div
+                        key={day}
+                        className="flex items-center justify-between p-3 rounded-lg border bg-gray-50/50 hover:bg-gray-100/50 transition-colors"
+                      >
+                        <Label htmlFor={`day-${day}`} className="font-medium cursor-pointer flex-1">
+                          {getDayDisplayName(day)}
                         </Label>
-                        <Switch id={`day-${day}`} checked={isAvailable} onCheckedChange={() => toggleDay(day)} />
+                        <Switch
+                          id={`day-${day}`}
+                          checked={isAvailable}
+                          onCheckedChange={() => toggleDay(day)}
+                          className="ml-2"
+                        />
                       </div>
                     ))}
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div>
-                  <h3 className="text-lg font-medium mb-4">Upcoming Availability</h3>
-                  <div className="border rounded-md p-4">
-                    <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
-                  </div>
-                </div>
+              {/* Working Hours & Timezone Card */}
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-gray-600" />
+                      <CardTitle>Working Hours</CardTitle>
+                    </div>
+                    <CardDescription>Set your working hours for client projects</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="start-time" className="text-sm font-medium">
+                          Start Time
+                        </Label>
+                        <Input
+                          id="start-time"
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="end-time" className="text-sm font-medium">
+                          End Time
+                        </Label>
+                        <Input
+                          id="end-time"
+                          type="time"
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-5 w-5 text-gray-600" />
+                      <CardTitle>Time Zone</CardTitle>
+                    </div>
+                    <CardDescription>Your local time zone for scheduling</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <Label htmlFor="timezone" className="text-sm font-medium">
+                        Select Your Time Zone
+                      </Label>
+                      <select
+                        id="timezone"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                      >
+                        {/* Americas */}
+                        <optgroup label="Americas">
+                          <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                          <option value="America/Denver">Mountain Time (US & Canada)</option>
+                          <option value="America/Chicago">Central Time (US & Canada)</option>
+                          <option value="America/New_York">Eastern Time (US & Canada)</option>
+                          <option value="America/Sao_Paulo">São Paulo (Brazil)</option>
+                          <option value="America/Argentina/Buenos_Aires">Buenos Aires (Argentina)</option>
+                        </optgroup>
+
+                        {/* Europe & Africa */}
+                        <optgroup label="Europe & Africa">
+                          <option value="Europe/London">London (UK)</option>
+                          <option value="Europe/Paris">Central European Time (Paris, Berlin)</option>
+                          <option value="Europe/Helsinki">Eastern European Time (Helsinki, Athens)</option>
+                          <option value="Europe/Moscow">Moscow (Russia)</option>
+                          <option value="Africa/Cairo">Cairo (Egypt)</option>
+                          <option value="Africa/Johannesburg">Johannesburg (South Africa)</option>
+                          <option value="Africa/Lagos">Lagos (Nigeria)</option>
+                          <option value="Africa/Nairobi">Nairobi (Kenya)</option>
+                        </optgroup>
+
+                        {/* Asia & Oceania */}
+                        <optgroup label="Asia & Oceania">
+                          <option value="Asia/Dubai">Dubai (UAE)</option>
+                          <option value="Asia/Kolkata">Mumbai, New Delhi (India)</option>
+                          <option value="Asia/Bangkok">Bangkok (Thailand)</option>
+                          <option value="Asia/Singapore">Singapore</option>
+                          <option value="Asia/Shanghai">Beijing, Shanghai (China)</option>
+                          <option value="Asia/Tokyo">Tokyo (Japan)</option>
+                          <option value="Asia/Seoul">Seoul (South Korea)</option>
+                          <option value="Australia/Sydney">Sydney (Australia)</option>
+                          <option value="Pacific/Auckland">Auckland (New Zealand)</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
+            </div>
 
-              <div>
-                <h3 className="text-lg font-medium mb-4">Working Hours</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="start-time">Start Time</Label>
-                    <Input
-                      id="start-time"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end-time">End Time</Label>
-                    <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-4">Time Zone</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">Select Your Time Zone</Label>
-                  <select
-                    id="timezone"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                  >
-                    {/* Americas */}
-                    <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
-                    <option value="America/Denver">Mountain Time (US & Canada)</option>
-                    <option value="America/Chicago">Central Time (US & Canada)</option>
-                    <option value="America/New_York">Eastern Time (US & Canada)</option>
-                    <option value="America/Sao_Paulo">São Paulo (Brazil)</option>
-                    <option value="America/Argentina/Buenos_Aires">Buenos Aires (Argentina)</option>
-
-                    {/* Europe & Africa */}
-                    <option value="Europe/London">London (UK)</option>
-                    <option value="Europe/Paris">Central European Time (Paris, Berlin)</option>
-                    <option value="Europe/Helsinki">Eastern European Time (Helsinki, Athens)</option>
-                    <option value="Europe/Moscow">Moscow (Russia)</option>
-                    <option value="Africa/Cairo">Cairo (Egypt)</option>
-                    <option value="Africa/Johannesburg">Johannesburg (South Africa)</option>
-                    <option value="Africa/Lagos">Lagos (Nigeria)</option>
-                    <option value="Africa/Nairobi">Nairobi (Kenya)</option>
-
-                    {/* Asia & Oceania */}
-                    <option value="Asia/Dubai">Dubai (UAE)</option>
-                    <option value="Asia/Kolkata">Mumbai, New Delhi (India)</option>
-                    <option value="Asia/Bangkok">Bangkok (Thailand)</option>
-                    <option value="Asia/Singapore">Singapore</option>
-                    <option value="Asia/Shanghai">Beijing, Shanghai (China)</option>
-                    <option value="Asia/Tokyo">Tokyo (Japan)</option>
-                    <option value="Asia/Seoul">Seoul (South Korea)</option>
-                    <option value="Australia/Sydney">Sydney (Australia)</option>
-                    <option value="Pacific/Auckland">Auckland (New Zealand)</option>
-                  </select>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button className="ml-auto" onClick={handleSaveAvailability} disabled={isSaving}>
+            {/* Save Button */}
+            <div className="flex justify-end">
+              <Button onClick={handleSaveAvailability} disabled={isSaving} size="lg" className="px-8">
                 {isSaving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
                 ) : (
-                  "Save Availability"
+                  <>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Save Availability
+                  </>
                 )}
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 

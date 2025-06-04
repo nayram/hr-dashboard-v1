@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Linkedin, Mail, MapPin, Phone, Twitter, Loader2 } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import { Linkedin, Mail, MapPin, Phone, Loader2, Clock, Calendar, Globe, Briefcase, Users, Target } from "lucide-react"
 import Link from "next/link"
 import type { HRPreferencesData } from "@/components/hr-preferences"
 import { getUserByUsername } from "@/lib/api"
@@ -146,178 +147,49 @@ export default function PublicProfilePage({ params }: { params: { username: stri
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <Card className="border-0 shadow-none">
+    <div className="container mx-auto py-6 max-w-6xl">
+      {/* Header Section */}
+      <Card className="border-0 shadow-none mb-8">
         <CardHeader className="pb-0">
           <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-            <Avatar className="h-24 w-24">
+            <Avatar className="h-32 w-32">
               <AvatarImage src={formattedProfile.profileImage || ""} alt={formattedProfile.name} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
                 {formattedProfile.name
                   .split(" ")
                   .map((n: string) => n[0])
                   .join("")}
               </AvatarFallback>
             </Avatar>
-            <div className="space-y-1">
-              <CardTitle className="text-2xl md:text-3xl">{formattedProfile.name}</CardTitle>
-              <CardDescription className="text-lg">{formattedProfile.title}</CardDescription>
-              <p className="text-sm text-gray-500">@{params.username}</p>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {formattedProfile.skills.slice(0, 4).map((skill: string, index: number) => (
-                  <Badge key={index} variant="secondary">
-                    {skill}
-                  </Badge>
-                ))}
-                {formattedProfile.skills.length > 4 && (
-                  <Badge variant="outline">+{formattedProfile.skills.length - 4} more</Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-6">
+            <div className="flex-1 space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">About</h3>
-                <p>{formattedProfile.about}</p>
-              </div>
+                <CardTitle className="text-3xl md:text-4xl mb-2">{formattedProfile.name}</CardTitle>
+                <CardDescription className="text-xl text-gray-600 mb-2">{formattedProfile.title}</CardDescription>
+                <p className="text-sm text-gray-500 mb-4">@{params.username}</p>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">HR Specialization</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Industry Focus</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.industryFocus.map((industry: string) => (
-                        <Badge key={industry} variant="outline">
-                          {industry}
-                        </Badge>
-                      ))}
+                {/* Contact Info */}
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                  {formattedProfile.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      <span>{formattedProfile.email}</span>
                     </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Company Size Preference</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.companySize.map((size: string) => (
-                        <Badge key={size} variant="outline">
-                          {size}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Recruitment Focus</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.recruitmentFocus.map((focus: string) => (
-                        <Badge key={focus} variant="outline">
-                          {focus}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Work Setup</h4>
-                    <p>{getWorkSetupLabel(formattedProfile.preferences.setupType)}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Languages</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.languages.map((language: string) => (
-                        <Badge key={language} variant="secondary">
-                          {language}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/*
-<div>
-  <h3 className="text-lg font-semibold mb-2">Experience</h3>
-  <div className="space-y-4">
-    {formattedProfile.experience.map((exp: any, index: number) => (
-      <div key={index}>
-        <div className="flex justify-between">
-          <div>
-            <h4 className="font-medium">{exp.title || "No title provided"}</h4>
-            <p className="text-gray-500">{exp.company || "No company provided"}</p>
-            {exp.location && <p className="text-gray-500 text-sm">{exp.location}</p>}
-          </div>
-          <span className="text-sm text-gray-500">
-            {exp.startDate && exp.endDate
-              ? `${exp.startDate} - ${exp.endDate}`
-              : exp.period || "No period provided"}
-          </span>
-        </div>
-        <p className="text-sm mt-1">{exp.description || "No description provided"}</p>
-        {index < formattedProfile.experience.length - 1 && <Separator className="my-3" />}
-      </div>
-    ))}
-    {formattedProfile.experience.length === 0 && (
-      <p className="text-gray-500">No experience information provided.</p>
-    )}
-  </div>
-</div>
-*/}
-
-              {/*
-<div>
-  <h3 className="text-lg font-semibold mb-2">Education</h3>
-  <div className="space-y-3">
-    {formattedProfile.education.map((edu: any, index: number) => (
-      <div key={index}>
-        <div className="flex justify-between">
-          <div>
-            <h4 className="font-medium">{edu.degree || "No degree provided"}</h4>
-            <p className="text-gray-500">{edu.institution || "No institution provided"}</p>
-          </div>
-          <span className="text-sm text-gray-500">{edu.year || "No year provided"}</span>
-        </div>
-        {index < formattedProfile.education.length - 1 && <Separator className="my-3" />}
-      </div>
-    ))}
-    {formattedProfile.education.length === 0 && (
-      <p className="text-gray-500">No education information provided.</p>
-    )}
-  </div>
-</div>
-*/}
-            </div>
-
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Contact Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span>{formattedProfile.email}</span>
-                  </div>
+                  )}
                   {formattedProfile.phone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-500" />
+                      <Phone className="h-4 w-4" />
                       <span>{formattedProfile.phone}</span>
                     </div>
                   )}
                   {formattedProfile.location && (
                     <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <MapPin className="h-4 w-4" />
                       <span>{formattedProfile.location}</span>
                     </div>
                   )}
                   {formattedProfile.linkedin && (
                     <div className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4 text-gray-500" />
+                      <Linkedin className="h-4 w-4" />
                       <a
                         href={formattedProfile.linkedin}
                         target="_blank"
@@ -328,106 +200,275 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                       </a>
                     </div>
                   )}
-                  {formattedProfile.twitter && (
-                    <div className="flex items-center gap-2">
-                      <Twitter className="h-4 w-4 text-gray-500" />
-                      <a
-                        href={`https://${formattedProfile.twitter}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        Twitter
-                      </a>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Availability</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Days</h4>
-                    <p>{formattedProfile.availability.days.join(", ")}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Hours</h4>
-                    <p>
-                      {formattedProfile.availability.startTime && formattedProfile.availability.endTime
-                        ? `${formattedProfile.availability.startTime} - ${formattedProfile.availability.endTime}`
-                        : formattedProfile.availability.hours}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Time Zone</h4>
-                    <p>{formattedProfile.availability.timezone}</p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Meeting Preferences</h4>
-                    <p>{formattedProfile.availability.preferences.join(", ")}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Skills Preview */}
+              <div className="flex flex-wrap gap-2">
+                {formattedProfile.skills.slice(0, 6).map((skill: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-sm">
+                    {skill}
+                  </Badge>
+                ))}
+                {formattedProfile.skills.length > 6 && (
+                  <Badge variant="outline" className="text-sm">
+                    +{formattedProfile.skills.length - 6} more
+                  </Badge>
+                )}
+              </div>
+            </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Skills & Expertise</CardTitle>
-                </CardHeader>
-                <CardContent>
+            {/* Contact Button */}
+            <div className="flex flex-col gap-2">
+              <Button asChild size="lg">
+                <Link href={`mailto:${formattedProfile.email}`}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact {formattedProfile.name.split(" ")[0]}
+                </Link>
+              </Button>
+              <p className="text-xs text-gray-500 text-center">Available for client work</p>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* About Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                About
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">{formattedProfile.about}</p>
+            </CardContent>
+          </Card>
+
+          {/* Skills & Expertise */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Skills & Expertise
+              </CardTitle>
+              <CardDescription>Core competencies and technical skills</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {formattedProfile.skills.length > 0 ? (
+                  formattedProfile.skills.map((skill: string, index: number) => (
+                    <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
+                      {skill}
+                    </Badge>
+                  ))
+                ) : (
+                  <p className="text-gray-500">No skills provided.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* HR Specialization */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                HR Specialization & Preferences
+              </CardTitle>
+              <CardDescription>Areas of expertise and working preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* HR Specializations */}
+              {formattedProfile.preferences.specializations.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 text-gray-900">HR Specializations</h4>
                   <div className="flex flex-wrap gap-2">
-                    {formattedProfile.skills.length > 0 ? (
-                      formattedProfile.skills.map((skill: string, index: number) => (
-                        <Badge key={index} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-gray-500">No skills provided.</p>
-                    )}
+                    {formattedProfile.preferences.specializations.map((spec: string) => (
+                      <Badge key={spec} variant="default" className="text-sm">
+                        {getSpecializationLabel(spec)}
+                      </Badge>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">HR Specializations</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <Separator />
+
+              {/* Industry Focus */}
+              {formattedProfile.preferences.industryFocus.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 text-gray-900">Industry Focus</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {formattedProfile.preferences.industryFocus.map((industry: string) => (
+                      <Badge key={industry} variant="outline" className="text-sm">
+                        {industry}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Separator />
+
+              {/* Company Size & Recruitment Focus */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {formattedProfile.preferences.companySize.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Specializations</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-gray-900">Company Size Preference</h4>
                     <div className="flex flex-wrap gap-2">
-                      {formattedProfile.preferences.specializations.map((spec: string) => (
-                        <Badge key={spec} variant="secondary">
-                          {getSpecializationLabel(spec)}
+                      {formattedProfile.preferences.companySize.map((size: string) => (
+                        <Badge key={size} variant="outline" className="text-sm">
+                          {size}
                         </Badge>
                       ))}
                     </div>
                   </div>
+                )}
+
+                {formattedProfile.preferences.recruitmentFocus.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Languages</h4>
+                    <h4 className="text-sm font-semibold mb-3 text-gray-900">Recruitment Focus</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {formattedProfile.preferences.recruitmentFocus.map((focus: string) => (
+                        <Badge key={focus} variant="outline" className="text-sm">
+                          {focus}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Work Setup & Languages */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-sm font-semibold mb-3 text-gray-900">Work Setup</h4>
+                  <Badge variant="secondary" className="text-sm">
+                    {getWorkSetupLabel(formattedProfile.preferences.setupType)}
+                  </Badge>
+                </div>
+
+                {formattedProfile.preferences.languages.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 text-gray-900">Languages</h4>
                     <div className="flex flex-wrap gap-2">
                       {formattedProfile.preferences.languages.map((language: string) => (
-                        <Badge key={language} variant="outline">
+                        <Badge key={language} variant="secondary" className="text-sm">
                           {language}
                         </Badge>
                       ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-center mt-4">
-                <Button variant="outline" asChild>
-                  <Link href={`mailto:${formattedProfile.email}`}>Contact {formattedProfile.name.split(" ")[0]}</Link>
-                </Button>
+                )}
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Availability Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="h-5 w-5" />
+                Availability
+              </CardTitle>
+              <CardDescription>When this expert is available for client work</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Available Days
+                </h4>
+                <p className="text-sm text-gray-600">
+                  {formattedProfile.availability.days.length > 0
+                    ? formattedProfile.availability.days
+                        .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+                        .join(", ")
+                    : "Not specified"}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Working Hours
+                </h4>
+                <p className="text-sm text-gray-600">
+                  {formattedProfile.availability.startTime && formattedProfile.availability.endTime
+                    ? `${formattedProfile.availability.startTime} - ${formattedProfile.availability.endTime}`
+                    : formattedProfile.availability.hours}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Time Zone
+                </h4>
+                <p className="text-sm text-gray-600">{formattedProfile.availability.timezone}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Quick Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Specializations</span>
+                <Badge variant="outline" className="text-xs">
+                  {formattedProfile.preferences.specializations.length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Skills</span>
+                <Badge variant="outline" className="text-xs">
+                  {formattedProfile.skills.length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Industries</span>
+                <Badge variant="outline" className="text-xs">
+                  {formattedProfile.preferences.industryFocus.length}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Languages</span>
+                <Badge variant="outline" className="text-xs">
+                  {formattedProfile.preferences.languages.length}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contact Card */}
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-base text-blue-900">Ready to Connect?</CardTitle>
+              <CardDescription className="text-blue-700">Get in touch to discuss your HR needs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full" size="lg">
+                <Link href={`mailto:${formattedProfile.email}`}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send Message
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
