@@ -12,24 +12,11 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
-import Link from "next/link"
 import { HRPreferences, type HRPreferencesData } from "@/components/hr-preferences"
 import { ProfileImageUpload } from "@/components/profile-image-upload"
 import { useAuth } from "@/contexts/auth-context"
 import { UsernameCreationModal } from "@/components/username-creation-modal"
-import {
-  Copy,
-  ExternalLink,
-  AlertCircle,
-  Mail,
-  Phone,
-  MapPin,
-  Linkedin,
-  Loader2,
-  Clock,
-  Calendar,
-  Globe,
-} from "lucide-react"
+import { AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2, Clock, Calendar, Globe } from "lucide-react"
 import { format } from "date-fns"
 import { updateUserProfile } from "@/lib/api"
 
@@ -389,7 +376,7 @@ export default function ProfilePage() {
       }
 
       // Send only the availability data to the API
-      const updatedUser = await updateUserProfile(token, { ...profile, ...availabilityData})
+      const updatedUser = await updateUserProfile(token, availabilityData)
 
       // Update the user context with the new data
       updateUser(updatedUser)
@@ -601,22 +588,21 @@ export default function ProfilePage() {
                       placeholder="Write a brief description about yourself, your experience, and your HR expertise..."
                     />
                   ) : (
-                    <div className="text-gray-700 leading-relaxed space-y-3">{
-                    profile.about
-                  .split("\n")
-                  .map((paragraph, index) => {
-                    // Skip empty paragraphs
-                    if (paragraph.trim() === "") return null
+                    <div className="text-gray-700 leading-relaxed space-y-3">
+                      {profile.about
+                        .split("\n")
+                        .map((paragraph, index) => {
+                          // Skip empty paragraphs
+                          if (paragraph.trim() === "") return null
 
-                    return (
-                      <p key={index} className="text-gray-700">
-                        {paragraph}
-                      </p>
-                    )
-                  })
-                  .filter(Boolean)
-                    
-                    || "No bio information provided yet."}</div>
+                          return (
+                            <p key={index} className="text-gray-700">
+                              {paragraph}
+                            </p>
+                          )
+                        })
+                        .filter(Boolean) || "No bio information provided yet."}
+                    </div>
                   )}
                 </CardContent>
               </Card>
