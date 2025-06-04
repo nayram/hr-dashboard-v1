@@ -255,6 +255,7 @@ export default function ProfilePage() {
       linkedin: profile.linkedin || "",
       email: profile.email,
       address: "", // Not used in our UI but required by API
+      profilePicture: profile.profileImage,
       availability: {
         days: selectedDays,
         startTime: startTime, // Use 24-hour format directly
