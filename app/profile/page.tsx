@@ -632,7 +632,22 @@ export default function ProfilePage() {
                       placeholder="Write a brief description about yourself, your experience, and your HR expertise..."
                     />
                   ) : (
-                    <p>{profile.about || "No bio information provided yet."}</p>
+                    <div className="text-gray-700 leading-relaxed space-y-3">{
+                    profile.about
+                  .split("\n")
+                  .map((paragraph, index) => {
+                    // Skip empty paragraphs
+                    if (paragraph.trim() === "") return null
+
+                    return (
+                      <p key={index} className="text-gray-700">
+                        {paragraph}
+                      </p>
+                    )
+                  })
+                  .filter(Boolean)
+                    
+                    || "No bio information provided yet."}</div>
                   )}
                 </CardContent>
               </Card>

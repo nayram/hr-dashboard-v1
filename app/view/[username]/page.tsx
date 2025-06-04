@@ -165,22 +165,9 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               <div>
                 <CardTitle className="text-3xl md:text-4xl mb-2">{formattedProfile.name}</CardTitle>
                 <CardDescription className="text-xl text-gray-600 mb-2">{formattedProfile.title}</CardDescription>
-                <p className="text-sm text-gray-500 mb-4">@{params.username}</p>
 
                 {/* Contact Info */}
                 <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                  {formattedProfile.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      <span>{formattedProfile.email}</span>
-                    </div>
-                  )}
-                  {formattedProfile.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{formattedProfile.phone}</span>
-                    </div>
-                  )}
                   {formattedProfile.location && (
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
@@ -219,7 +206,21 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700 leading-relaxed">{formattedProfile.about}</p>
+              <div className="text-gray-700 leading-relaxed space-y-3">
+                {formattedProfile.about
+                  .split("\n")
+                  .map((paragraph, index) => {
+                    // Skip empty paragraphs
+                    if (paragraph.trim() === "") return null
+
+                    return (
+                      <p key={index} className="text-gray-700">
+                        {paragraph}
+                      </p>
+                    )
+                  })
+                  .filter(Boolean)}
+              </div>
             </CardContent>
           </Card>
 
