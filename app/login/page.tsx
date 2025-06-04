@@ -77,7 +77,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in to HR Profile</CardTitle>
+          <CardTitle className="text-2xl font-bold">Sign in to Kaatch</CardTitle>
           <CardDescription>Enter your email to receive a magic link for authentication</CardDescription>
         </CardHeader>
         <CardContent>

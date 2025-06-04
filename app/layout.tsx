@@ -11,7 +11,7 @@ import { Footer } from "@/components/footer"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "HR Profile Platform",
+  title: "",
   description: "Showcase your HR expertise and manage your professional availability in one place.",
     generator: 'v0.dev'
 }
