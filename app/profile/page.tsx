@@ -455,7 +455,7 @@ export default function ProfilePage() {
       <Tabs defaultValue="profile">
         <TabsList className="mb-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="preferences">HR Preferences</TabsTrigger>
+          <TabsTrigger value="preferences">Project Preferences</TabsTrigger>
           <TabsTrigger value="availability">Availability</TabsTrigger>
         </TabsList>
 

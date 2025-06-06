@@ -102,7 +102,9 @@ export function ProfileImageUpload({ initialImage, name, onImageChange, classNam
 
       // Update the image in the component state
       const profilePictureUrl = updatedUser.profilePicture?.publicUrl || publicUrl
+      
       setImage(profilePictureUrl)
+
       onImageChange(updatedUser.profilePicture)
 
       // Update the user context with the updated user data

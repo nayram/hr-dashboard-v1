@@ -184,7 +184,7 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
   return (
     <Card>
       <CardHeader>
-        <CardTitle>HR Professional Preferences</CardTitle>
+        <CardTitle>Project Preferences</CardTitle>
         <CardDescription>
           {readOnly
             ? "Specialized areas and preferences of this HR professional"
