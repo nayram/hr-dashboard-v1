@@ -19,6 +19,7 @@ import { UsernameCreationModal } from "@/components/username-creation-modal"
 import { AlertCircle, Mail, Phone, MapPin, Linkedin, Loader2, Clock, Calendar, Globe } from "lucide-react"
 import { format } from "date-fns"
 import { updateUserProfile } from "@/lib/api"
+import { FreelancerTypeSelector } from "@/components/freelancer-type-selector"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -41,6 +42,13 @@ export default function ProfilePage() {
   const [endTime, setEndTime] = useState<string>("17:00")
   const [timezone, setTimezone] = useState<string>("Europe/Paris")
   const [skillsInput, setSkillsInput] = useState<string>("")
+  const [freelancerTypes, setFreelancerTypes] = useState<
+    Array<{
+      id: string
+      values: string[]
+      experience?: number
+    }>
+  >([])
 
   // Update the profile state initialization to include profileImage
   const [profile, setProfile] = useState({
@@ -59,6 +67,11 @@ export default function ProfilePage() {
       uploadedAt: "",
     },
     skills: [] as string[],
+    type: [] as Array<{
+      id: string
+      values: string[]
+      experience?: number
+    }>,
     preferences: {
       industryFocus: [] as string[],
       companySize: [] as string[],
@@ -109,6 +122,7 @@ export default function ProfilePage() {
           twitter: user.twitter,
           profileImage: user.profilePicture,
           skills: user.skills || prev.skills,
+          type: user.type || prev.type,
           preferences: {
             ...prev.preferences,
             industryFocus: user.preferences?.industries || prev.preferences.industryFocus,
@@ -121,8 +135,9 @@ export default function ProfilePage() {
           },
         }
 
-        // Set the skills input when user data loads
+        // Set the skills input and freelancer types when user data loads
         setSkillsInput((user.skills || []).join(", "))
+        setFreelancerTypes(user.type || [])
 
         return updatedProfile
       })
@@ -256,6 +271,7 @@ export default function ProfilePage() {
       email: profile.email,
       address: "", // Not used in our UI but required by API
       profilePicture: profile.profileImage,
+      type: freelancerTypes,
       availability: {
         days: selectedDays,
         startTime: startTime, // Use 24-hour format directly
@@ -664,6 +680,19 @@ export default function ProfilePage() {
                       )}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Freelancer Services</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FreelancerTypeSelector
+                    freelancerTypes={freelancerTypes}
+                    onChange={setFreelancerTypes}
+                    readOnly={!isEditing}
+                  />
                 </CardContent>
               </Card>
 

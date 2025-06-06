@@ -6,11 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Linkedin, Mail, MapPin, Phone, Loader2, Clock, Calendar, Globe, Briefcase, Users, Target } from "lucide-react"
+import { Linkedin, MapPin, Loader2, Clock, Calendar, Globe, Briefcase, Users, Target } from "lucide-react"
 import Link from "next/link"
 import type { HRPreferencesData } from "@/components/hr-preferences"
 import { getUserByUsername } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
+import { FreelancerTypeSelector } from "@/components/freelancer-type-selector"
 
 // Map API specialization values to user-friendly display labels
 const specializationLabels: Record<string, string> = {
@@ -123,6 +124,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     twitter: profile.twitter || "",
     profileImage: profile.profilePicture?.publicUrl || null,
     skills: profile.skills || [],
+    type: profile.type || [],
     availability: {
       days: profile.availability?.days || [],
       hours: profile.availability?.hours || "9:00 AM - 5:00 PM",
@@ -247,6 +249,26 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               </div>
             </CardContent>
           </Card>
+
+          {/* Freelancer Types */}
+          {formattedProfile.type.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Freelancer Services
+                </CardTitle>
+                <CardDescription>Types of freelancing services offered</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FreelancerTypeSelector
+                  freelancerTypes={formattedProfile.type}
+                  onChange={() => {}} // Read-only
+                  readOnly={true}
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* HR Specialization */}
           <Card>
