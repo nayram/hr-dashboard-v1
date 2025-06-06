@@ -383,6 +383,7 @@ export default function ProfilePage() {
 
       // Prepare availability data according to the API schema
       const availabilityData = {
+        ...prepareProfileData(),
         availability: {
           days: selectedDays,
           startTime: startTime, // Use 24-hour format directly
