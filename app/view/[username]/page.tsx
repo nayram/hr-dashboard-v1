@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Linkedin, MapPin, Loader2, Clock, Calendar, Globe, Briefcase, Users, Target } from "lucide-react"
+import { Linkedin, MapPin, Loader2, Clock, Calendar, Globe, Briefcase, Users, Target, Euro } from "lucide-react"
 import Link from "next/link"
 import type { HRPreferencesData } from "@/components/hr-preferences"
 import { getUserByUsername } from "@/lib/api"
@@ -146,6 +146,10 @@ export default function PublicProfilePage({ params }: { params: { username: stri
       languages: profile.languages || [],
       additionalNotes: profile.preferences?.additionalNotes || "",
     } as HRPreferencesData,
+    budget: {
+      monthly: profile.monthlyBudget || 0,
+      hourly: profile.hourlyBudget || 0,
+    },
   }
 
   return (
@@ -416,6 +420,44 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               </div>
             </CardContent>
           </Card>
+
+          {/* Budget Information Card */}
+          {(formattedProfile.budget.monthly > 0 || formattedProfile.budget.hourly > 0) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Euro className="h-5 w-5" />
+                  Budget Information
+                </CardTitle>
+                <CardDescription>Preferred budget ranges for projects</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formattedProfile.budget.monthly > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Monthly Budget
+                    </h4>
+                    <p className="text-lg font-semibold text-primary">
+                      €{formattedProfile.budget.monthly.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                {formattedProfile.budget.hourly > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Hourly Budget
+                    </h4>
+                    <p className="text-lg font-semibold text-primary">
+                      €{formattedProfile.budget.hourly.toLocaleString()}/hour
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats Card */}
           <Card>
