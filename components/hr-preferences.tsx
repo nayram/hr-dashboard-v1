@@ -1,13 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
 import { updateUserProfile } from "@/lib/api"
@@ -17,8 +15,7 @@ import { Loader2 } from "lucide-react"
 export interface HRPreferencesData {
   industryFocus: string[] // This will map to preferences.industries in the API
   companySize: string[]
-  recruitmentFocus: string[]
-  specializations: string[]
+  projectLifeSpan: string[] // Maps to preferences.projectLifeSpan in the API
   workStyle: string // Keep for backward compatibility
   setupType: string // New field that maps to the API
   languages: string[]
@@ -65,15 +62,8 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
     ...preferences,
     // Initialize setupType from the API value, fall back to workStyle for backward compatibility
     setupType: preferences.setupType || preferences.workStyle || "",
+    projectLifeSpan: preferences.projectLifeSpan || [],
   })
-  const [showRecruitmentFocus, setShowRecruitmentFocus] = useState(
-    currentPreferences.specializations.includes("Recruiting"),
-  )
-
-  // Update showRecruitmentFocus when specializations change
-  useEffect(() => {
-    setShowRecruitmentFocus(currentPreferences.specializations.includes("Recruiting"))
-  }, [currentPreferences.specializations])
 
   // Update the handleInputChange function to properly handle arrays
   const handleInputChange = (field: keyof HRPreferencesData, value: any) => {
@@ -99,9 +89,7 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
         preferences: {
           industries: currentPreferences.industryFocus,
           companySize: currentPreferences.companySize,
-          recruitmentRoles: currentPreferences.recruitmentFocus,
-          specialization: currentPreferences.specializations,
-          projectLifeSpan: ["Long-term projects (more than 2 months)"], // Default value
+          projectLifeSpan: currentPreferences.projectLifeSpan.length > 0 ? currentPreferences.projectLifeSpan : ["Long-term projects (more than 2 months)"],
         },
         languages: currentPreferences.languages,
         setupType: currentPreferences.setupType,
@@ -144,18 +132,6 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
     handleInputChange("industryFocus", industries)
   }
 
-  const handleSpecializationChange = (specialization: string, checked: boolean) => {
-    let specializations
-
-    if (checked) {
-      specializations = [...currentPreferences.specializations, specialization]
-    } else {
-      specializations = currentPreferences.specializations.filter((s) => s !== specialization)
-    }
-
-    handleInputChange("specializations", specializations)
-  }
-
   // Helper functions for multi-select handling
   const handleCompanySizeChange = (size: string) => {
     const sizes = currentPreferences.companySize.includes(size)
@@ -163,14 +139,6 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
       : [...currentPreferences.companySize, size]
 
     handleInputChange("companySize", sizes)
-  }
-
-  const handleRecruitmentFocusChange = (focus: string) => {
-    const focuses = currentPreferences.recruitmentFocus.includes(focus)
-      ? currentPreferences.recruitmentFocus.filter((f) => f !== focus)
-      : [...currentPreferences.recruitmentFocus, focus]
-
-    handleInputChange("recruitmentFocus", focuses)
   }
 
   const handleLanguageChange = (language: string) => {
@@ -181,109 +149,19 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
     handleInputChange("languages", languages)
   }
 
+  const handleProjectDurationChange = (duration: string) => {
+    const durations = currentPreferences.projectLifeSpan.includes(duration)
+      ? currentPreferences.projectLifeSpan.filter((d) => d !== duration)
+      : [...currentPreferences.projectLifeSpan, duration]
+
+    handleInputChange("projectLifeSpan", durations)
+  }
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Project Preferences</CardTitle>
-        <CardDescription>
-          {readOnly
-            ? "Specialized areas and preferences of this HR professional"
-            : "Specify your specialized areas and preferences as an HR professional"}
-        </CardDescription>
-      </CardHeader>
       <CardContent className="space-y-8">
         {/* Grouped HR Specializations and Recruitment Focus */}
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 space-y-6">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-1 w-4 bg-blue-500 rounded-full"></div>
-            <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wide">Core HR Functions</h3>
-            <div className="h-1 flex-1 bg-blue-100 rounded-full"></div>
-          </div>
-
-          {/* HR Specializations Section */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-medium">HR Specializations</h3>
-            <div className="bg-white p-4 rounded-lg space-y-2 border border-gray-100">
-              {Object.entries(specializationLabels).map(([value, label]) => (
-                <div key={value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`spec-${value.replace(/\s+/g, "-").toLowerCase()}`}
-                    checked={currentPreferences.specializations.includes(value)}
-                    onCheckedChange={(checked) => {
-                      handleSpecializationChange(value, !!checked)
-                    }}
-                    disabled={readOnly}
-                  />
-                  <Label
-                    htmlFor={`spec-${value.replace(/\s+/g, "-").toLowerCase()}`}
-                    className={`${
-                      readOnly && !currentPreferences.specializations.includes(value) ? "text-gray-400" : ""
-                    }`}
-                  >
-                    {label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recruitment Focus Section - Only shown when "Recruiting" is selected */}
-          <div
-            className={`space-y-3 overflow-hidden transition-all duration-300 ease-in-out ${
-              showRecruitmentFocus ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 my-0 py-0"
-            }`}
-          >
-            <h3 className="text-lg font-medium">Recruitment Focus</h3>
-            <div className="bg-white p-4 rounded-lg border border-gray-100">
-              <div className="flex flex-wrap gap-2 mb-2">
-                {currentPreferences.recruitmentFocus.map((focus) => (
-                  <Badge key={focus} variant="secondary" className="px-3 py-1">
-                    {focus}
-                    {!readOnly && (
-                      <button
-                        className="ml-2 text-gray-500 hover:text-gray-700"
-                        onClick={() => handleRecruitmentFocusChange(focus)}
-                      >
-                        ×
-                      </button>
-                    )}
-                  </Badge>
-                ))}
-              </div>
-              {!readOnly && (
-                <div className="flex gap-2 mt-3">
-                  <Select
-                    onValueChange={(value) => {
-                      if (value && !currentPreferences.recruitmentFocus.includes(value)) {
-                        handleRecruitmentFocusChange(value)
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select recruitment focus" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Business Development">Business Development</SelectItem>
-                      <SelectItem value="Design (UI/UX)">Design (UI/UX)</SelectItem>
-                      <SelectItem value="Content Creation">Content Creation</SelectItem>
-                      <SelectItem value="Administrative">Administrative</SelectItem>
-                      <SelectItem value="Human Resources (HR)">Human Resources (HR)</SelectItem>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Operations">Operations</SelectItem>
-                      <SelectItem value="Sales">Sales</SelectItem>
-                      <SelectItem value="Customer Success">Customer Success</SelectItem>
-                      <SelectItem value="Tech & IT roles">Tech & IT roles</SelectItem>
-                      <SelectItem value="Sales & Business Development">Sales & Business Development</SelectItem>
-                      <SelectItem value="Design & Marketing">Design & Marketing</SelectItem>
-                      <SelectItem value="Product">Product</SelectItem>
-                      <SelectItem value="Engineering">Engineering</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        
 
         <Separator />
 
@@ -323,6 +201,50 @@ export function HRPreferences({ preferences, onUpdate, readOnly = false }: HRPre
                       {industry}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Project Duration Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Project Duration</h3>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {currentPreferences.projectLifeSpan.map((duration) => (
+              <Badge key={duration} variant="secondary" className="px-3 py-1">
+                {duration}
+                {!readOnly && (
+                  <button
+                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    onClick={() => handleProjectDurationChange(duration)}
+                  >
+                    ×
+                  </button>
+                )}
+              </Badge>
+            ))}
+          </div>
+          {!readOnly && (
+            <div className="flex gap-2">
+              <Select
+                onValueChange={(value) => {
+                  if (value && !currentPreferences.projectLifeSpan.includes(value)) {
+                    handleProjectDurationChange(value)
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select project duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Short projects">Short projects</SelectItem>
+                  <SelectItem value="Long projects">Long projects</SelectItem>
+                  <SelectItem value="Short-term project (up to 2 months)">Short-term project (up to 2 months)</SelectItem>
+                  <SelectItem value="Long-term projects (more than 2 months)">Long-term projects (more than 2 months)</SelectItem>
+                  <SelectItem value="Quick consultation (around 2 hours)">Quick consultation (around 2 hours)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
