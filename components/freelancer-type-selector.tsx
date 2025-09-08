@@ -62,8 +62,14 @@ const FREELANCER_OPTIONS = {
   },
 }
 
-export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = false }: FreelancerTypeSelectorProps) {
-  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set(freelancerTypes.map((type) => type.id)))
+export function FreelancerTypeSelector({
+  freelancerTypes = [],
+  onChange,
+  readOnly = false,
+}: FreelancerTypeSelectorProps) {
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(
+    new Set((freelancerTypes || []).map((type) => type.id)),
+  )
 
   const toggleTypeExpansion = (typeId: string) => {
     if (readOnly) return
@@ -80,19 +86,21 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
   }
 
   const isTypeSelected = (typeId: string) => {
-    return freelancerTypes.some((type) => type.id === typeId)
+    return (freelancerTypes || []).some((type) => type.id === typeId)
   }
 
   const getTypeData = (typeId: string) => {
-    return freelancerTypes.find((type) => type.id === typeId)
+    return (freelancerTypes || []).find((type) => type.id === typeId)
   }
 
   const handleTypeToggle = (typeId: string) => {
     if (readOnly) return
 
+    const currentTypes = freelancerTypes || []
+
     if (isTypeSelected(typeId)) {
       // Remove the type
-      onChange(freelancerTypes.filter((type) => type.id !== typeId))
+      onChange(currentTypes.filter((type) => type.id !== typeId))
       setExpandedTypes((prev) => {
         const newSet = new Set(prev)
         newSet.delete(typeId)
@@ -100,7 +108,7 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
       })
     } else {
       // Add the type
-      onChange([...freelancerTypes, { id: typeId, values: [], experience: 1 }])
+      onChange([...currentTypes, { id: typeId, values: [], experience: 1 }])
       setExpandedTypes((prev) => new Set([...prev, typeId]))
     }
   }
@@ -108,11 +116,13 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
   const handleSubOptionToggle = (typeId: string, subOption: string) => {
     if (readOnly) return
 
-    const updatedTypes = freelancerTypes.map((type) => {
+    const currentTypes = freelancerTypes || []
+    const updatedTypes = currentTypes.map((type) => {
       if (type.id === typeId) {
-        const newValues = type.values.includes(subOption)
-          ? type.values.filter((v) => v !== subOption)
-          : [...type.values, subOption]
+        const currentValues = type.values || []
+        const newValues = currentValues.includes(subOption)
+          ? currentValues.filter((v) => v !== subOption)
+          : [...currentValues, subOption]
         return { ...type, values: newValues }
       }
       return type
@@ -123,7 +133,8 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
   const handleExperienceChange = (typeId: string, experience: number) => {
     if (readOnly) return
 
-    const updatedTypes = freelancerTypes.map((type) => {
+    const currentTypes = freelancerTypes || []
+    const updatedTypes = currentTypes.map((type) => {
       if (type.id === typeId) {
         return { ...type, experience }
       }
@@ -135,7 +146,7 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
   if (readOnly) {
     return (
       <div className="space-y-4">
-        {freelancerTypes.length === 0 ? (
+        {!freelancerTypes || freelancerTypes.length === 0 ? (
           <p className="text-gray-500 text-sm">No freelancer types selected</p>
         ) : (
           freelancerTypes.map((type) => {
@@ -156,7 +167,7 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
                   </div>
                 </div>
 
-                {type.values.length > 0 && (
+                {type.values && type.values.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {type.values.map((value) => (
                       <Badge key={value} variant="secondary" className="text-xs">
@@ -247,7 +258,7 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
                       <div key={option} className="flex items-center space-x-2">
                         <Checkbox
                           id={`${typeId}-${option}`}
-                          checked={typeData?.values.includes(option) || false}
+                          checked={(typeData?.values || []).includes(option)}
                           onCheckedChange={() => handleSubOptionToggle(typeId, option)}
                         />
                         <Label htmlFor={`${typeId}-${option}`} className="text-sm font-normal cursor-pointer">
@@ -258,7 +269,7 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
                   </div>
 
                   {/* Show selected count */}
-                  {typeData && typeData.values.length > 0 && (
+                  {typeData && typeData.values && typeData.values.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       <div className="flex flex-wrap gap-2">
                         {typeData.values.map((value) => (
@@ -282,12 +293,12 @@ export function FreelancerTypeSelector({ freelancerTypes, onChange, readOnly = f
         )
       })}
 
-      {freelancerTypes.length > 0 && (
+      {freelancerTypes && freelancerTypes.length > 0 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h4 className="font-medium text-gray-900 mb-2">Summary</h4>
           <div className="text-sm text-gray-600">
             You've selected {freelancerTypes.length} freelancer type(s) with{" "}
-            {freelancerTypes.reduce((total, type) => total + type.values.length, 0)} total specializations.
+            {freelancerTypes.reduce((total, type) => total + (type.values?.length || 0), 0)} total specializations.
           </div>
         </div>
       )}

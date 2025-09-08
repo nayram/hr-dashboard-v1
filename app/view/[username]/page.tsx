@@ -112,14 +112,14 @@ export default function PublicProfilePage({ params }: { params: { username: stri
     )
   }
 
-  // Format the profile data
+  // Format the profile data with safe defaults
   const formattedProfile = {
-    name: profile.name ? `${profile.name} ${profile.lastName || ""}`.trim() : "",
-    title: profile.title || "",
+    name: profile.name ? `${profile.name} ${profile.lastName || ""}`.trim() : "HR Professional",
+    title: profile.title || "HR Professional",
     email: profile.email || "",
     phone: profile.phoneNumber || "",
     location: profile.location?.city ? `${profile.location.city}, ${profile.location.country}` : "",
-    about: profile.bio || "",
+    about: profile.bio || "No bio provided",
     linkedin: profile.linkedin || "",
     twitter: profile.twitter || "",
     profileImage: profile.profilePicture?.publicUrl || null,
@@ -255,7 +255,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
           </Card>
 
           {/* Freelancer Types */}
-          {formattedProfile.type.length > 0 && (
+          {formattedProfile.type && formattedProfile.type.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -284,10 +284,25 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               <CardDescription>Areas of expertise and working preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* HR Specializations */}
+              {formattedProfile.preferences.specializations &&
+                formattedProfile.preferences.specializations.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 text-gray-900">HR Specializations</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {formattedProfile.preferences.specializations.map((spec: string) => (
+                        <Badge key={spec} variant="default" className="text-sm">
+                          {getSpecializationLabel(spec)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
+              <Separator />
 
               {/* Industry Focus */}
-              {formattedProfile.preferences.industryFocus.length > 0 && (
+              {formattedProfile.preferences.industryFocus && formattedProfile.preferences.industryFocus.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold mb-3 text-gray-900">Industry Focus</h4>
                   <div className="flex flex-wrap gap-2">
@@ -304,7 +319,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
 
               {/* Company Size & Recruitment Focus */}
               <div className="grid md:grid-cols-2 gap-6">
-                {formattedProfile.preferences.companySize.length > 0 && (
+                {formattedProfile.preferences.companySize && formattedProfile.preferences.companySize.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold mb-3 text-gray-900">Company Size Preference</h4>
                     <div className="flex flex-wrap gap-2">
@@ -317,6 +332,19 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   </div>
                 )}
 
+                {formattedProfile.preferences.recruitmentFocus &&
+                  formattedProfile.preferences.recruitmentFocus.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold mb-3 text-gray-900">Recruitment Focus</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {formattedProfile.preferences.recruitmentFocus.map((focus: string) => (
+                          <Badge key={focus} variant="outline" className="text-sm">
+                            {focus}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
 
               <Separator />
@@ -330,7 +358,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                   </Badge>
                 </div>
 
-                {formattedProfile.preferences.languages.length > 0 && (
+                {formattedProfile.preferences.languages && formattedProfile.preferences.languages.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold mb-3 text-gray-900">Languages</h4>
                     <div className="flex flex-wrap gap-2">
@@ -367,7 +395,7 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                 <p className="text-sm text-gray-600">
                   {formattedProfile.availability.days.length > 0
                     ? formattedProfile.availability.days
-                        .map((day: string) => day.charAt(0).toUpperCase() + day.slice(1))
+                        .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
                         .join(", ")
                     : "Not specified"}
                 </p>
@@ -440,6 +468,12 @@ export default function PublicProfilePage({ params }: { params: { username: stri
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Specializations</span>
+                <Badge variant="outline" className="text-xs">
+                  {formattedProfile.preferences.specializations?.length || 0}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Skills</span>
                 <Badge variant="outline" className="text-xs">
                   {formattedProfile.skills.length}
@@ -448,13 +482,13 @@ export default function PublicProfilePage({ params }: { params: { username: stri
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Industries</span>
                 <Badge variant="outline" className="text-xs">
-                  {formattedProfile.preferences.industryFocus.length}
+                  {formattedProfile.preferences.industryFocus?.length || 0}
                 </Badge>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Languages</span>
                 <Badge variant="outline" className="text-xs">
-                  {formattedProfile.preferences.languages.length}
+                  {formattedProfile.preferences.languages?.length || 0}
                 </Badge>
               </div>
             </CardContent>

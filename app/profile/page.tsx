@@ -84,7 +84,6 @@ export default function ProfilePage() {
     name: "",
     title: "",
     email: "",
-    username: "",
     phone: "",
     location: "",
     about: "",
@@ -156,9 +155,7 @@ export default function ProfilePage() {
           about: user.bio || prev.about,
           linkedin: user.linkedin,
           twitter: user.twitter,
-          username: user.username || prev.username,
           profileImage: user.profilePicture,
-          title: user.title || prev.title,
           skills: user.skills || prev.skills,
           type: user.type || prev.type,
           monthlyBudget: user.monthlyBudget || prev.monthlyBudget,
@@ -311,8 +308,7 @@ export default function ProfilePage() {
       name: firstName,
       lastName,
       phoneNumber: profile.phone,
-      username: profile.username,
-      bio: profile.about || "", // Ensure bio is never empty
+      bio: profile.about || "\n", // Ensure bio is never empty
       title: profile.title,
       linkedin: profile.linkedin || "",
       email: profile.email,
@@ -414,6 +410,7 @@ export default function ProfilePage() {
       profileImage: image,
     }));
   };
+
 
   const handleSaveAvailability = async () => {
     if (!token) {
@@ -592,7 +589,9 @@ export default function ProfilePage() {
                         disabled={true}
                         className="bg-gray-50 text-gray-500 cursor-not-allowed"
                       />
-                      <p className="text-xs text-gray-500"></p>
+                      <p className="text-xs text-gray-500">
+                        Email cannot be changed for security reasons
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone</Label>
@@ -630,6 +629,11 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-xl font-semibold">{profile.name}</h3>
                       <p className="text-gray-500">{profile.title}</p>
+                      {user?.username && (
+                        <p className="text-sm text-gray-400 mt-1">
+                          @{user.username}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2 text-sm">
                       <div className="flex items-center gap-2">

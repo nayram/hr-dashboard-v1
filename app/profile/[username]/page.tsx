@@ -114,12 +114,12 @@ export default function PublicProfilePage({ params }: { params: { username: stri
 
   // Format the profile data
   const formattedProfile = {
-    name: profile.name ? `${profile.name} ${profile.lastName || ""}`.trim() : "",
-    title: profile.title || "",
+    name: profile.name ? `${profile.name} ${profile.lastName || ""}`.trim() : "HR Professional",
+    title: profile.title || "HR Professional",
     email: profile.email || "",
     phone: profile.phoneNumber || "",
     location: profile.location?.city ? `${profile.location.city}, ${profile.location.country}` : "",
-    about: profile.bio || "",
+    about: profile.bio || "No bio provided",
     linkedin: profile.linkedin || "",
     twitter: profile.twitter || "",
     profileImage: profile.profilePicture?.publicUrl || null,
@@ -210,6 +210,17 @@ export default function PublicProfilePage({ params }: { params: { username: stri
                       {formattedProfile.preferences.companySize.map((size: string) => (
                         <Badge key={size} variant="outline">
                           {size}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Recruitment Focus</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {formattedProfile.preferences.recruitmentFocus.map((focus: string) => (
+                        <Badge key={focus} variant="outline">
+                          {focus}
                         </Badge>
                       ))}
                     </div>
